@@ -1,0 +1,47 @@
+{
+    "name": "Claude Code Sandbox",
+    "build": {
+        "dockerfile": "../docker/Dockerfile",
+        "context": "..",
+        "args": {
+            "TZ": "Asia/Ho_Chi_Minh"
+        }
+    },
+    "postStartCommand": "sudo /usr/local/bin/init-firewall.sh || echo 'Firewall setup failed'",
+    "remoteUser": "node",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace",
+    "containerEnv": {
+        "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+    },
+    "mounts": [
+        "source=claude-code-config,target=/home/node/.claude,type=volume",
+        "source=claude-code-history,target=/commandhistory,type=volume",
+        "source=claude-code-npm,target=/usr/local/share/npm-global,type=volume",
+        "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "anthropic.claude-code"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.scrollback": 10000,
+                "claudeCode.allowDangerouslySkipPermissions": true
+            }
+        }
+    },
+    "runArgs": [
+        "--cap-add=NET_ADMIN"
+    ],
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": true,
+            "upgradePackages": false,
+            "username": "node"
+        }
+    }
+}

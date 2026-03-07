@@ -1,0 +1,39 @@
+{
+  "name": "cc-sandbox",
+  "version": "1.0.0",
+  "description": "Run claude --dangerously-skip-permissions safely inside a Docker sandbox",
+  "bin": {
+    "cc-sandbox": "./cc-sandbox.sh"
+  },
+  "files": [
+    "cc-sandbox.sh",
+    "docker/Dockerfile",
+    "docker/init-firewall.sh",
+    "vscode/devcontainer.json",
+    "vscode/tasks.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "sandbox",
+    "docker",
+    "devcontainer",
+    "security",
+    "skip-permissions"
+  ],
+  "author": "ngocquang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngocquang/cc-sandbox.git"
+  },
+  "homepage": "https://github.com/ngocquang/cc-sandbox#readme",
+  "bugs": {
+    "url": "https://github.com/ngocquang/cc-sandbox/issues"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

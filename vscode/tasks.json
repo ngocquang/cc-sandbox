@@ -1,0 +1,61 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Claude: Skip Permissions",
+            "type": "shell",
+            "command": "claude --dangerously-skip-permissions",
+            "presentation": { "reveal": "always", "panel": "dedicated", "focus": true, "clear": true },
+            "problemMatcher": [],
+            "detail": "Launch Claude Code in skip-permissions mode (interactive)"
+        },
+        {
+            "label": "Claude: Resume Last Chat",
+            "type": "shell",
+            "command": "claude --dangerously-skip-permissions --continue",
+            "presentation": { "reveal": "always", "panel": "dedicated", "focus": true, "clear": true },
+            "problemMatcher": [],
+            "detail": "Resume the previous Claude conversation"
+        },
+        {
+            "label": "Claude: One-Shot Task",
+            "type": "shell",
+            "command": "claude --dangerously-skip-permissions -p \"${input:claudePrompt}\"",
+            "presentation": { "reveal": "always", "panel": "dedicated", "focus": true, "clear": true },
+            "problemMatcher": [],
+            "detail": "Give Claude a one-shot task"
+        },
+        {
+            "label": "Claude: Safe Mode (no rm)",
+            "type": "shell",
+            "command": "claude --dangerously-skip-permissions --disallowedTools \"Bash(rm:*)\"",
+            "presentation": { "reveal": "always", "panel": "dedicated", "focus": true, "clear": true },
+            "problemMatcher": [],
+            "detail": "Skip permissions but block file deletion commands"
+        },
+        {
+            "label": "Firewall: Re-initialize",
+            "type": "shell",
+            "command": "sudo /usr/local/bin/init-firewall.sh",
+            "presentation": { "reveal": "always", "panel": "shared", "focus": false },
+            "problemMatcher": [],
+            "detail": "Re-apply firewall rules"
+        },
+        {
+            "label": "Claude: Login",
+            "type": "shell",
+            "command": "claude login",
+            "presentation": { "reveal": "always", "panel": "dedicated", "focus": true },
+            "problemMatcher": [],
+            "detail": "Authenticate Claude Code (first time only)"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "claudePrompt",
+            "type": "promptString",
+            "description": "What should Claude do?",
+            "default": "Fix all lint errors and add missing types"
+        }
+    ]
+}
