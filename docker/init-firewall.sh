@@ -48,10 +48,12 @@ ALLOWED_DOMAINS=(
 
     # VS Code extensions & devcontainer features
     "open-vsx.org"
-    "visualstudio.com"
+    "marketplace.visualstudio.com"
+    "update.code.visualstudio.com"
     "vscode.blob.core.windows.net"
     "az764295.vo.msecnd.net"
     "gallerycdn.vsassets.io"
+    "vscode.download.prss.microsoft.com"
     "default.exp-tas.com"
 )
 

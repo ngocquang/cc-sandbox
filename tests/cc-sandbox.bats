@@ -187,13 +187,6 @@ teardown() {
     [ "$status" -eq 0 ]
 }
 
-@test "init devcontainer.json matches source vscode/devcontainer.json" {
-    bash "$SCRIPT" --init "$TEST_TEMP"
-
-    run diff "$PROJECT_ROOT/vscode/devcontainer.json" "$TEST_TEMP/.devcontainer/devcontainer.json"
-    [ "$status" -eq 0 ]
-}
-
 @test "init tasks.json matches source vscode/tasks.json" {
     bash "$SCRIPT" --init "$TEST_TEMP"
 
