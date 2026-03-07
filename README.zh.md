@@ -206,7 +206,7 @@ cc-sandbox --shell
 
 ```text
 your-project/
-├── .devcontainer/
+├── devcontainer/
 │   ├── Dockerfile             # 包含所有工具的沙箱镜像
 │   ├── devcontainer.json      # VS Code 容器配置
 │   └── init-firewall.sh       # 网络安全规则
@@ -285,7 +285,7 @@ claude login
 # CLI 模式
 ./cc-sandbox.sh --allow-domain "api.example.com" --allow-domain "docker.io"
 
-# DevContainer 模式 — 编辑 .devcontainer/init-firewall.sh
+# DevContainer 模式 — 编辑 devcontainer/init-firewall.sh
 # 或在 devcontainer.json 中设置环境变量：
 #   "containerEnv": { "EXTRA_ALLOWED_DOMAINS": "api.example.com,docker.io" }
 ```
@@ -316,9 +316,9 @@ TZ=America/New_York ./cc-sandbox.sh
 
 ### 自定义 DevContainer
 
-运行 `--init` 后，你可以编辑 `.devcontainer/` 中的任何文件：
+运行 `--init` 后，你可以编辑 `devcontainer/` 中的任何文件：
 
-**添加工具** — 编辑 `.devcontainer/Dockerfile`：
+**添加工具** — 编辑 `devcontainer/Dockerfile`：
 
 ```dockerfile
 # 添加 Python ML 工具
@@ -330,7 +330,7 @@ RUN curl -OL https://go.dev/dl/go1.22.0.linux-amd64.tar.gz && \
 ENV PATH=$PATH:/usr/local/go/bin
 ```
 
-**添加 VS Code 扩展** — 编辑 `.devcontainer/devcontainer.json`：
+**添加 VS Code 扩展** — 编辑 `devcontainer/devcontainer.json`：
 
 ```jsonc
 "customizations": {
@@ -371,7 +371,7 @@ ENV PATH=$PATH:/usr/local/go/bin
   project_path              项目路径（默认：当前目录）
 
 设置：
-  --init                    在项目中创建 .devcontainer + VS Code 任务
+  --init                    在项目中创建 devcontainer + VS Code 任务
   --rebuild                 强制重建 Docker 镜像
   --version, -v             显示版本
   --help, -h                显示帮助

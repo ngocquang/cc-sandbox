@@ -1,0 +1,5 @@
+# Dev files
+.devcontainer/
+tests/
+.claude/
+.DS_Store

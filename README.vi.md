@@ -206,7 +206,7 @@ Lệnh này tạo ra:
 
 ```text
 your-project/
-├── .devcontainer/
+├── devcontainer/
 │   ├── Dockerfile             # Image sandbox với đầy đủ công cụ
 │   ├── devcontainer.json      # Cấu hình container cho VS Code
 │   └── init-firewall.sh       # Quy tắc bảo mật mạng
@@ -285,7 +285,7 @@ Tính năng bảo mật chính:
 # Chế độ CLI
 ./cc-sandbox.sh --allow-domain "api.example.com" --allow-domain "docker.io"
 
-# Chế độ DevContainer — sửa .devcontainer/init-firewall.sh
+# Chế độ DevContainer — sửa devcontainer/init-firewall.sh
 # Hoặc đặt biến môi trường trong devcontainer.json:
 #   "containerEnv": { "EXTRA_ALLOWED_DOMAINS": "api.example.com,docker.io" }
 ```
@@ -316,9 +316,9 @@ TZ=America/New_York ./cc-sandbox.sh
 
 ### Tùy chỉnh DevContainer
 
-Sau khi chạy `--init`, bạn có thể sửa bất kỳ file nào trong `.devcontainer/`:
+Sau khi chạy `--init`, bạn có thể sửa bất kỳ file nào trong `devcontainer/`:
 
-**Thêm công cụ** — sửa `.devcontainer/Dockerfile`:
+**Thêm công cụ** — sửa `devcontainer/Dockerfile`:
 
 ```dockerfile
 # Thêm công cụ Python ML
@@ -330,7 +330,7 @@ RUN curl -OL https://go.dev/dl/go1.22.0.linux-amd64.tar.gz && \
 ENV PATH=$PATH:/usr/local/go/bin
 ```
 
-**Thêm extension VS Code** — sửa `.devcontainer/devcontainer.json`:
+**Thêm extension VS Code** — sửa `devcontainer/devcontainer.json`:
 
 ```jsonc
 "customizations": {
@@ -371,7 +371,7 @@ Tham số:
   project_path              Đường dẫn đến dự án (mặc định: thư mục hiện tại)
 
 Thiết lập:
-  --init                    Tạo .devcontainer + VS Code tasks trong dự án
+  --init                    Tạo devcontainer + VS Code tasks trong dự án
   --rebuild                 Buộc build lại Docker image
   --version, -v             Hiển thị phiên bản
   --help, -h                Hiển thị trợ giúp

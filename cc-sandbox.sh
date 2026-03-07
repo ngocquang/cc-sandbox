@@ -107,7 +107,7 @@ show_help() {
     echo ""
     echo -e "  ${BOLD}${WHITE}OPTIONS — Setup${NC}"
     echo ""
-    echo -e "    ${GREEN}--init${NC}                    ${I_VSCODE} Setup .devcontainer + VS Code tasks in project"
+    echo -e "    ${GREEN}--init${NC}                    ${I_VSCODE} Setup devcontainer + VS Code tasks in project"
     echo -e "    ${GREEN}--rebuild${NC}                 ${I_PACKAGE} Force rebuild Docker image"
     echo -e "    ${GREEN}--version${NC}, ${GREEN}-v${NC}             ${I_INFO} Show version"
     echo -e "    ${GREEN}--help${NC}, ${GREEN}-h${NC}                ${I_INFO} Show this help"
@@ -159,26 +159,26 @@ init_vscode_project() {
     echo -e "    ${DIM}Target:${NC} ${WHITE}${target_path}${NC}"
     echo ""
 
-    # ── Create .devcontainer/ ────────────────────────────────
-    local dc_dir="${target_path}/.devcontainer"
+    # ── Create devcontainer/ ────────────────────────────────
+    local dc_dir="${target_path}/devcontainer"
     mkdir -p "$dc_dir"
 
     # Dockerfile — copy from the project's single source of truth
     cp "${SCRIPT_DIR}/docker/Dockerfile" "${dc_dir}/Dockerfile"
-    show_progress_line "Created .devcontainer/Dockerfile" "done"
+    show_progress_line "Created devcontainer/Dockerfile" "done"
 
     # Firewall script — copy from the project's init-firewall.sh
     cp "${SCRIPT_DIR}/docker/init-firewall.sh" "${dc_dir}/init-firewall.sh"
     chmod +x "${dc_dir}/init-firewall.sh"
-    show_progress_line "Created .devcontainer/init-firewall.sh" "done"
+    show_progress_line "Created devcontainer/init-firewall.sh" "done"
 
     # devcontainer.json — copy from the project's single source of truth
-    cp "${SCRIPT_DIR}/.devcontainer/devcontainer.json" "${dc_dir}/devcontainer.json"
-    # Fix Dockerfile path: in target project, Dockerfile is local to .devcontainer/
+    cp "${SCRIPT_DIR}/devcontainer/devcontainer.json" "${dc_dir}/devcontainer.json"
+    # Fix Dockerfile path: in target project, Dockerfile is local to devcontainer/
     sed -i.bak 's|"dockerfile": "\.\./docker/Dockerfile"|"dockerfile": "Dockerfile"|' "${dc_dir}/devcontainer.json"
     sed -i.bak '/"context": "\.\.",/d' "${dc_dir}/devcontainer.json"
     rm -f "${dc_dir}/devcontainer.json.bak"
-    show_progress_line "Created .devcontainer/devcontainer.json" "done"
+    show_progress_line "Created devcontainer/devcontainer.json" "done"
 
     # ── Create .vscode/tasks.json ────────────────────────────
     local vscode_dir="${target_path}/.vscode"
@@ -202,7 +202,7 @@ init_vscode_project() {
     echo -e "  ${BOLD}${WHITE}Files created:${NC}"
     echo ""
     echo -e "    ${DIM}${target_path}/${NC}"
-    echo -e "    ${DIM}├── ${NC}${WHITE}.devcontainer/${NC}"
+    echo -e "    ${DIM}├── ${NC}${WHITE}devcontainer/${NC}"
     echo -e "    ${DIM}│   ├── ${NC}${CYAN}Dockerfile${NC}"
     echo -e "    ${DIM}│   ├── ${NC}${CYAN}devcontainer.json${NC}"
     echo -e "    ${DIM}│   └── ${NC}${CYAN}init-firewall.sh${NC}"

@@ -206,7 +206,7 @@ This creates:
 
 ```text
 your-project/
-├── .devcontainer/
+├── devcontainer/
 │   ├── Dockerfile             # Sandbox image with all tools
 │   ├── devcontainer.json      # VS Code container config
 │   └── init-firewall.sh       # Network security rules
@@ -285,7 +285,7 @@ Key security features:
 # CLI mode
 ./cc-sandbox.sh --allow-domain "api.example.com" --allow-domain "docker.io"
 
-# DevContainer mode — edit .devcontainer/init-firewall.sh
+# DevContainer mode — edit devcontainer/init-firewall.sh
 # Or set the env var in devcontainer.json:
 #   "containerEnv": { "EXTRA_ALLOWED_DOMAINS": "api.example.com,docker.io" }
 ```
@@ -316,9 +316,9 @@ TZ=America/New_York ./cc-sandbox.sh
 
 ### Customize DevContainer
 
-After running `--init`, you can edit any file in `.devcontainer/`:
+After running `--init`, you can edit any file in `devcontainer/`:
 
-**Add tools** — edit `.devcontainer/Dockerfile`:
+**Add tools** — edit `devcontainer/Dockerfile`:
 
 ```dockerfile
 # Add Python ML tools
@@ -330,7 +330,7 @@ RUN curl -OL https://go.dev/dl/go1.22.0.linux-amd64.tar.gz && \
 ENV PATH=$PATH:/usr/local/go/bin
 ```
 
-**Add VS Code extensions** — edit `.devcontainer/devcontainer.json`:
+**Add VS Code extensions** — edit `devcontainer/devcontainer.json`:
 
 ```jsonc
 "customizations": {
@@ -371,7 +371,7 @@ Arguments:
   project_path              Path to project (default: current directory)
 
 Setup:
-  --init                    Setup .devcontainer + VS Code tasks in project
+  --init                    Setup devcontainer + VS Code tasks in project
   --rebuild                 Force rebuild Docker image
   --version, -v             Show version
   --help, -h                Show help

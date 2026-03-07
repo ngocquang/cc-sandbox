@@ -103,29 +103,29 @@ teardown() {
 # --init mode — VS Code DevContainer setup
 # ══════════════════════════════════════════════════════════════
 
-@test "init creates .devcontainer directory" {
+@test "init creates devcontainer directory" {
     run bash "$SCRIPT" --init "$TEST_TEMP"
     [ "$status" -eq 0 ]
-    [ -d "$TEST_TEMP/.devcontainer" ]
+    [ -d "$TEST_TEMP/devcontainer" ]
 }
 
 @test "init creates Dockerfile" {
     run bash "$SCRIPT" --init "$TEST_TEMP"
     [ "$status" -eq 0 ]
-    [ -f "$TEST_TEMP/.devcontainer/Dockerfile" ]
+    [ -f "$TEST_TEMP/devcontainer/Dockerfile" ]
 }
 
 @test "init creates devcontainer.json" {
     run bash "$SCRIPT" --init "$TEST_TEMP"
     [ "$status" -eq 0 ]
-    [ -f "$TEST_TEMP/.devcontainer/devcontainer.json" ]
+    [ -f "$TEST_TEMP/devcontainer/devcontainer.json" ]
 }
 
 @test "init creates init-firewall.sh and makes it executable" {
     run bash "$SCRIPT" --init "$TEST_TEMP"
     [ "$status" -eq 0 ]
-    [ -f "$TEST_TEMP/.devcontainer/init-firewall.sh" ]
-    [ -x "$TEST_TEMP/.devcontainer/init-firewall.sh" ]
+    [ -f "$TEST_TEMP/devcontainer/init-firewall.sh" ]
+    [ -x "$TEST_TEMP/devcontainer/init-firewall.sh" ]
 }
 
 @test "init creates .vscode/tasks.json" {
@@ -150,7 +150,7 @@ teardown() {
     bash "$SCRIPT" --init "$TEST_TEMP"
 
     local content
-    content=$(cat "$TEST_TEMP/.devcontainer/devcontainer.json")
+    content=$(cat "$TEST_TEMP/devcontainer/devcontainer.json")
 
     [[ "$content" == *'"name": "Claude Code Sandbox"'* ]]
     [[ "$content" == *'"dockerfile": "Dockerfile"'* ]]
@@ -176,14 +176,14 @@ teardown() {
 @test "init Dockerfile matches source docker/Dockerfile" {
     bash "$SCRIPT" --init "$TEST_TEMP"
 
-    run diff "$PROJECT_ROOT/docker/Dockerfile" "$TEST_TEMP/.devcontainer/Dockerfile"
+    run diff "$PROJECT_ROOT/docker/Dockerfile" "$TEST_TEMP/devcontainer/Dockerfile"
     [ "$status" -eq 0 ]
 }
 
 @test "init firewall script matches source docker/init-firewall.sh" {
     bash "$SCRIPT" --init "$TEST_TEMP"
 
-    run diff "$PROJECT_ROOT/docker/init-firewall.sh" "$TEST_TEMP/.devcontainer/init-firewall.sh"
+    run diff "$PROJECT_ROOT/docker/init-firewall.sh" "$TEST_TEMP/devcontainer/init-firewall.sh"
     [ "$status" -eq 0 ]
 }
 

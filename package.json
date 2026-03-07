@@ -32,6 +32,14 @@
   "bugs": {
     "url": "https://github.com/ngocquang/cc-sandbox/issues"
   },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "scripts": {
+    "test": "bats tests/",
+    "prepublishOnly": "bats tests/"
+  },
   "engines": {
     "node": ">=16"
   }
