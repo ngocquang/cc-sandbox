@@ -9,6 +9,7 @@
     "cc-sandboxer.sh",
     "docker/Dockerfile",
     "docker/init-firewall.sh",
+    "devcontainer/devcontainer.json",
     "vscode/tasks.json",
     "LICENSE",
     "README.md"
