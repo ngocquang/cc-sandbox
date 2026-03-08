@@ -34,38 +34,40 @@
 
 ## 快速开始
 
-### 通过 npx（推荐）
+### 通过 npm（推荐）
 
 ```bash
+# 全局安装
+npm install -g cc-sandboxer
+
 # 在当前目录运行
-npx cc-sandboxer
+cc-sandboxer
 
 # 指定项目运行
-npx cc-sandboxer ~/projects/my-app
+cc-sandboxer ~/projects/my-app
 
 # 一次性任务
-npx cc-sandboxer . -p "修复所有 lint 错误"
+cc-sandboxer . -p "修复所有 lint 错误"
 
 # 设置 VS Code DevContainer
-npx cc-sandboxer --init ~/projects/my-app
+cc-sandboxer --init ~/projects/my-app
 ```
 
-### 通过 git clone
+### 通过 npx（无需安装）
 
 ```bash
-git clone https://github.com/ngocquang/cc-sandbox.git
-cd cc-sandbox
-chmod +x cc-sandboxer.sh
-./cc-sandboxer.sh
+npx cc-sandboxer
+npx cc-sandboxer ~/projects/my-app
+npx cc-sandboxer . -p "修复所有 lint 错误"
 ```
 
 ### VS Code（DevContainer）
 
 ```bash
 # 在项目中设置 DevContainer
-npx cc-sandboxer --init ~/projects/my-app
+cc-sandboxer --init ~/projects/my-app
 
-# 在 VS Code 中打开 -> 在容器中重新打开 -> 运行任务
+# 然后在 VS Code 中打开 -> 在容器中重新打开
 code ~/projects/my-app
 ```
 
@@ -89,17 +91,17 @@ code ~/projects/my-app
 
 ## 安装
 
-### 方式 A — npx（无需安装）
-
-```bash
-npx cc-sandboxer
-```
-
-### 方式 B — 全局安装
+### 方式 A — 全局安装（推荐）
 
 ```bash
 npm install -g cc-sandboxer
 cc-sandboxer
+```
+
+### 方式 B — npx（无需安装）
+
+```bash
+npx cc-sandboxer
 ```
 
 ### 方式 C — 克隆仓库
@@ -116,7 +118,7 @@ chmod +x cc-sandboxer.sh
 添加到 `~/.zshrc` 或 `~/.bashrc` 以便快速访问：
 
 ```bash
-alias cc="npx cc-sandboxer"
+alias cc="cc-sandboxer"
 ```
 
 然后重新加载 shell：

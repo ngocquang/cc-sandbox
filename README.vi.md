@@ -34,38 +34,40 @@ Một lệnh duy nhất. Cách ly hoàn toàn. Terminal hoặc VS Code.
 
 ## Bắt đầu nhanh
 
-### Qua npx (khuyên dùng)
+### Qua npm (khuyên dùng)
 
 ```bash
+# Cài toàn cục
+npm install -g cc-sandboxer
+
 # Chạy trong thư mục hiện tại
-npx cc-sandboxer
+cc-sandboxer
 
 # Chạy với dự án cụ thể
-npx cc-sandboxer ~/projects/my-app
+cc-sandboxer ~/projects/my-app
 
 # Chạy một lệnh duy nhất
-npx cc-sandboxer . -p "Sửa tất cả lỗi lint"
+cc-sandboxer . -p "Sửa tất cả lỗi lint"
 
 # Thiết lập VS Code DevContainer
-npx cc-sandboxer --init ~/projects/my-app
+cc-sandboxer --init ~/projects/my-app
 ```
 
-### Qua git clone
+### Qua npx (không cần cài)
 
 ```bash
-git clone https://github.com/ngocquang/cc-sandbox.git
-cd cc-sandbox
-chmod +x cc-sandboxer.sh
-./cc-sandboxer.sh
+npx cc-sandboxer
+npx cc-sandboxer ~/projects/my-app
+npx cc-sandboxer . -p "Sửa tất cả lỗi lint"
 ```
 
 ### VS Code (DevContainer)
 
 ```bash
 # Thiết lập DevContainer trong dự án
-npx cc-sandboxer --init ~/projects/my-app
+cc-sandboxer --init ~/projects/my-app
 
-# Mở VS Code -> Reopen in Container -> Chạy task
+# Sau đó mở VS Code -> Reopen in Container
 code ~/projects/my-app
 ```
 
@@ -89,17 +91,17 @@ code ~/projects/my-app
 
 ## Cài đặt
 
-### Cách A — npx (không cần cài)
-
-```bash
-npx cc-sandboxer
-```
-
-### Cách B — Cài toàn cục
+### Cách A — Cài toàn cục (khuyên dùng)
 
 ```bash
 npm install -g cc-sandboxer
 cc-sandboxer
+```
+
+### Cách B — npx (không cần cài)
+
+```bash
+npx cc-sandboxer
 ```
 
 ### Cách C — Clone repo
@@ -116,7 +118,7 @@ chmod +x cc-sandboxer.sh
 Thêm vào `~/.zshrc` hoặc `~/.bashrc` để truy cập nhanh:
 
 ```bash
-alias cc="npx cc-sandboxer"
+alias cc="cc-sandboxer"
 ```
 
 Sau đó tải lại shell:

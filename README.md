@@ -34,38 +34,40 @@ One command. Full isolation. Terminal or VS Code.
 
 ## Quick Start
 
-### Via npx (recommended)
+### Via npm (recommended)
 
 ```bash
+# Install globally
+npm install -g cc-sandboxer
+
 # Run in current directory
-npx cc-sandboxer
+cc-sandboxer
 
 # Run with a specific project
-npx cc-sandboxer ~/projects/my-app
+cc-sandboxer ~/projects/my-app
 
 # One-shot task
-npx cc-sandboxer . -p "Fix all lint errors"
+cc-sandboxer . -p "Fix all lint errors"
 
 # Setup VS Code DevContainer
-npx cc-sandboxer --init ~/projects/my-app
+cc-sandboxer --init ~/projects/my-app
 ```
 
-### Via git clone
+### Via npx (no install needed)
 
 ```bash
-git clone https://github.com/ngocquang/cc-sandbox.git
-cd cc-sandbox
-chmod +x cc-sandboxer.sh
-./cc-sandboxer.sh
+npx cc-sandboxer
+npx cc-sandboxer ~/projects/my-app
+npx cc-sandboxer . -p "Fix all lint errors"
 ```
 
 ### VS Code (DevContainer)
 
 ```bash
 # Setup DevContainer in your project
-npx cc-sandboxer --init ~/projects/my-app
+cc-sandboxer --init ~/projects/my-app
 
-# Open in VS Code -> Reopen in Container -> Run tasks
+# Then open in VS Code -> Reopen in Container
 code ~/projects/my-app
 ```
 
@@ -89,20 +91,20 @@ code ~/projects/my-app
 
 ## Installation
 
-### Option A — npx (no install needed)
-
-```bash
-npx cc-sandboxer
-```
-
-### Option B — Global install
+### Option A — Global install (recommended)
 
 ```bash
 npm install -g cc-sandboxer
 cc-sandboxer
 ```
 
-### Option C — Clone the repo
+### Option B — npx (no install needed)
+
+```bash
+npx cc-sandboxer
+```
+
+### Option C — Clone the repo (alternative)
 
 ```bash
 git clone https://github.com/ngocquang/cc-sandbox.git
@@ -116,7 +118,7 @@ chmod +x cc-sandboxer.sh
 Add to your `~/.zshrc` or `~/.bashrc` for quick access:
 
 ```bash
-alias cc="npx cc-sandboxer"
+alias cc="cc-sandboxer"
 ```
 
 Then reload your shell:
