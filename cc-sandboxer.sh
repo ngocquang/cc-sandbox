@@ -23,6 +23,21 @@ SCRIPT_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
 # ── Version (read from package.json) ─────────────────────────
 SCRIPT_VERSION=$(grep -o '"version": *"[^"]*"' "${SCRIPT_DIR}/package.json" 2>/dev/null | head -1 | grep -o '[0-9][0-9.]*' || echo "0.0.0")
 
+# ── Detect install method (npx / global npm / git clone) ─────
+detect_cmd_prefix() {
+    if [[ -n "${npm_execpath:-}" && "${npm_lifecycle_event:-}" == "npx" ]] \
+       || [[ "${SCRIPT_DIR}" == *"/_npx/"* ]] \
+       || [[ "${SCRIPT_DIR}" == *"/.npm/_npx"* ]]; then
+        echo "npx cc-sandboxer"
+    elif [[ "${SCRIPT_DIR}" == *"/node_modules/.bin"* ]] \
+         || command -v cc-sandboxer &>/dev/null; then
+        echo "cc-sandboxer"
+    else
+        echo "./cc-sandboxer.sh"
+    fi
+}
+CMD_PREFIX="$(detect_cmd_prefix)"
+
 # ── Colors & Styles ──────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -136,7 +151,7 @@ show_help() {
     show_banner
     echo -e "  ${BOLD}${WHITE}USAGE${NC}"
     echo ""
-    echo -e "    ${GREEN}cc-sandboxer${NC} ${DIM}[project_path]${NC} ${DIM}[options]${NC}"
+    echo -e "    ${GREEN}${CMD_PREFIX}${NC} ${DIM}[project_path]${NC} ${DIM}[options]${NC}"
     echo ""
     echo -e "  ${BOLD}${WHITE}MODES${NC}"
     echo ""
@@ -167,19 +182,19 @@ show_help() {
     echo -e "  ${BOLD}${WHITE}EXAMPLES${NC}"
     echo ""
     echo -e "    ${DIM}# Quick start — interactive mode${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandboxer"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX}"
     echo ""
     echo -e "    ${DIM}# Setup VS Code DevContainer in your project${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandboxer --init ~/projects/my-app"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} --init ~/projects/my-app"
     echo ""
     echo -e "    ${DIM}# One-shot task${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandboxer . -p \"Refactor auth and write tests\""
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . -p \"Refactor auth and write tests\""
     echo ""
     echo -e "    ${DIM}# Resume last conversation${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandboxer . --continue"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --continue"
     echo ""
     echo -e "    ${DIM}# Safe mode — block rm commands${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandboxer . --disallowedTools \"Bash(rm:*)\""
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --disallowedTools \"Bash(rm:*)\""
     echo ""
     echo -e "  ${BOLD}${WHITE}ENVIRONMENT${NC}"
     echo ""
@@ -207,21 +222,33 @@ init_vscode_project() {
     mkdir -p "$dc_dir"
 
     # Dockerfile — copy from the project's single source of truth
-    cp "${SCRIPT_DIR}/docker/Dockerfile" "${dc_dir}/Dockerfile"
-    show_progress_line "Created .devcontainer/Dockerfile" "done"
+    if [[ ! -f "${dc_dir}/Dockerfile" ]]; then
+        cp "${SCRIPT_DIR}/docker/Dockerfile" "${dc_dir}/Dockerfile"
+        show_progress_line "Created .devcontainer/Dockerfile" "done"
+    else
+        show_progress_line "Skipped .devcontainer/Dockerfile (already exists)" "skip"
+    fi
 
     # Firewall script — copy from the project's init-firewall.sh
-    cp "${SCRIPT_DIR}/docker/init-firewall.sh" "${dc_dir}/init-firewall.sh"
-    chmod +x "${dc_dir}/init-firewall.sh"
-    show_progress_line "Created .devcontainer/init-firewall.sh" "done"
+    if [[ ! -f "${dc_dir}/init-firewall.sh" ]]; then
+        cp "${SCRIPT_DIR}/docker/init-firewall.sh" "${dc_dir}/init-firewall.sh"
+        chmod +x "${dc_dir}/init-firewall.sh"
+        show_progress_line "Created .devcontainer/init-firewall.sh" "done"
+    else
+        show_progress_line "Skipped .devcontainer/init-firewall.sh (already exists)" "skip"
+    fi
 
     # devcontainer.json — copy from the project's single source of truth
-    cp "${SCRIPT_DIR}/devcontainer/devcontainer.json" "${dc_dir}/devcontainer.json"
-    # Fix Dockerfile path: in target project, Dockerfile is local to devcontainer/
-    sed -i.bak 's|"dockerfile": "\.\./docker/Dockerfile"|"dockerfile": "Dockerfile"|' "${dc_dir}/devcontainer.json"
-    sed -i.bak '/"context": "\.\.",/d' "${dc_dir}/devcontainer.json"
-    rm -f "${dc_dir}/devcontainer.json.bak"
-    show_progress_line "Created .devcontainer/devcontainer.json" "done"
+    if [[ ! -f "${dc_dir}/devcontainer.json" ]]; then
+        cp "${SCRIPT_DIR}/devcontainer/devcontainer.json" "${dc_dir}/devcontainer.json"
+        # Fix Dockerfile path: in target project, Dockerfile is local to devcontainer/
+        sed -i.bak 's|"dockerfile": "\.\./docker/Dockerfile"|"dockerfile": "Dockerfile"|' "${dc_dir}/devcontainer.json"
+        sed -i.bak '/"context": "\.\.",/d' "${dc_dir}/devcontainer.json"
+        rm -f "${dc_dir}/devcontainer.json.bak"
+        show_progress_line "Created .devcontainer/devcontainer.json" "done"
+    else
+        show_progress_line "Skipped .devcontainer/devcontainer.json (already exists)" "skip"
+    fi
 
     # ── Create .vscode/tasks.json ────────────────────────────
     local vscode_dir="${target_path}/.vscode"
@@ -256,6 +283,8 @@ init_vscode_project() {
     echo ""
     echo -e "  ${BOLD}${WHITE}Next steps:${NC}"
     echo ""
+    echo -e "  ${I_VSCODE} ${BOLD}${WHITE}VS Code:${NC}"
+    echo ""
     echo -e "    ${YELLOW}1.${NC}  Open the project in VS Code"
     echo -e "        ${GREEN}\$${NC} code ${target_path}"
     echo ""
@@ -284,6 +313,25 @@ init_vscode_project() {
     echo -e "    ${DIM}If the extension is disabled inside the container, install it manually:${NC}"
     echo -e "    ${WHITE}Cmd+Shift+X${NC} ${DIM}→${NC} ${WHITE}Search \"Claude Code\"${NC} ${DIM}→${NC} ${WHITE}Install in Dev Container${NC}"
     echo -e "    ${DIM}This only needs to be done once — it persists across rebuilds.${NC}"
+    echo ""
+    divider
+    echo ""
+    echo -e "  ${BOLD}${WHITE}Or use Terminal mode instead:${NC}"
+    echo ""
+    echo -e "    ${DIM}# Interactive${NC}"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} ${target_path}"
+    echo ""
+    echo -e "    ${DIM}# One-shot task${NC}"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} ${target_path} -p \"your task here\""
+    echo ""
+    echo -e "    ${DIM}# Resume previous conversation${NC}"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} ${target_path} --continue"
+    echo ""
+    echo -e "    ${DIM}# Shell mode (manual Claude start)${NC}"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} ${target_path} --shell"
+    echo ""
+    echo -e "    ${DIM}# Safe mode (block rm commands)${NC}"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} ${target_path} --disallowedTools \"Bash(rm:*)\""
     echo ""
     divider
     echo ""
@@ -419,8 +467,8 @@ if [[ ! -d "$PROJECT_PATH" ]]; then
         err "Project path not found: ${PROJECT_PATH:-<empty>}"
         echo ""
         echo -e "    ${BOLD}${WHITE}Usage:${NC}"
-        echo -e "    ${GREEN}cc-sandboxer${NC} ${DIM}[project_path]${NC}"
-        echo -e "    ${GREEN}cc-sandboxer --init${NC} ${DIM}~/projects/my-app${NC}"
+        echo -e "    ${GREEN}${CMD_PREFIX}${NC} ${DIM}[project_path]${NC}"
+        echo -e "    ${GREEN}${CMD_PREFIX} --init${NC} ${DIM}~/projects/my-app${NC}"
         echo ""
         exit 1
     fi
@@ -777,8 +825,31 @@ main() {
     echo ""
     success "Session ended. Your project files are safe ${I_SHIELD}"
     echo ""
-    echo -e "    ${DIM}Run again :${NC}  ${GREEN}cc-sandboxer${NC}"
-    echo -e "    ${DIM}Resume   :${NC}  ${GREEN}cc-sandboxer --continue${NC}"
+    divider
+    echo ""
+    echo -e "  ${BOLD}${WHITE}Next steps:${NC}"
+    echo ""
+    echo -e "    ${YELLOW}1.${NC}  Run again (interactive)"
+    echo -e "        ${GREEN}\$${NC} ${CMD_PREFIX} ${PROJECT_PATH}"
+    echo ""
+    echo -e "    ${YELLOW}2.${NC}  Resume this conversation"
+    echo -e "        ${GREEN}\$${NC} ${CMD_PREFIX} ${PROJECT_PATH} --continue"
+    echo ""
+    echo -e "    ${YELLOW}3.${NC}  One-shot task"
+    echo -e "        ${GREEN}\$${NC} ${CMD_PREFIX} ${PROJECT_PATH} -p \"your task here\""
+    echo ""
+    echo -e "    ${YELLOW}4.${NC}  Shell mode (manual Claude start)"
+    echo -e "        ${GREEN}\$${NC} ${CMD_PREFIX} ${PROJECT_PATH} --shell"
+    echo ""
+    echo -e "    ${YELLOW}5.${NC}  Safe mode (block rm commands)"
+    echo -e "        ${GREEN}\$${NC} ${CMD_PREFIX} ${PROJECT_PATH} --disallowedTools \"Bash(rm:*)\""
+    echo ""
+    echo -e "    ${YELLOW}6.${NC}  Add custom domains to firewall"
+    echo -e "        ${GREEN}\$${NC} ${CMD_PREFIX} ${PROJECT_PATH} --allow-domain \"api.example.com\""
+    echo ""
+    echo -e "    ${YELLOW}7.${NC}  Setup VS Code DevContainer"
+    echo -e "        ${GREEN}\$${NC} ${CMD_PREFIX} --init ${PROJECT_PATH}"
+    echo ""
     show_update_notice
     echo ""
 }
