@@ -373,6 +373,7 @@ Arguments:
 Setup:
   --init                    Setup devcontainer + VS Code tasks in project
   --rebuild                 Force rebuild Docker image
+  --uninstall               Remove image, volumes & cache
   --version, -v             Show version
   --help, -h                Show help
 
@@ -388,6 +389,16 @@ Runtime:
 ---
 
 ## Cleanup
+
+```bash
+# One command — removes image, volumes & cache
+cc-sandboxer --uninstall
+
+# To also remove the global npm package
+npm uninstall -g cc-sandboxer
+```
+
+Or manually:
 
 ```bash
 # Remove persisted data

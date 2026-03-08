@@ -373,6 +373,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 设置：
   --init                    在项目中创建 devcontainer + VS Code 任务
   --rebuild                 强制重建 Docker 镜像
+  --uninstall               删除镜像、volumes 和缓存
   --version, -v             显示版本
   --help, -h                显示帮助
 
@@ -388,6 +389,16 @@ ENV PATH=$PATH:/usr/local/go/bin
 ---
 
 ## 清理
+
+```bash
+# 一条命令 — 删除镜像、volumes 和缓存
+cc-sandboxer --uninstall
+
+# 同时卸载全局 npm 包
+npm uninstall -g cc-sandboxer
+```
+
+或手动：
 
 ```bash
 # 删除持久化数据

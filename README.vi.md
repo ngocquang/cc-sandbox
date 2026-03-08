@@ -373,6 +373,7 @@ Tham số:
 Thiết lập:
   --init                    Tạo devcontainer + VS Code tasks trong dự án
   --rebuild                 Buộc build lại Docker image
+  --uninstall               Xóa image, volumes & cache
   --version, -v             Hiển thị phiên bản
   --help, -h                Hiển thị trợ giúp
 
@@ -388,6 +389,16 @@ Runtime:
 ---
 
 ## Dọn dẹp
+
+```bash
+# Một lệnh — xóa image, volumes & cache
+cc-sandboxer --uninstall
+
+# Để xóa luôn package npm global
+npm uninstall -g cc-sandboxer
+```
+
+Hoặc thủ công:
 
 ```bash
 # Xóa dữ liệu lưu trữ

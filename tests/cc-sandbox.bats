@@ -51,6 +51,7 @@ teardown() {
     [[ "$output" == *"--allow-domain"* ]]
     [[ "$output" == *"--continue"* ]]
     [[ "$output" == *"--disallowedTools"* ]]
+    [[ "$output" == *"--uninstall"* ]]
 }
 
 # ══════════════════════════════════════════════════════════════

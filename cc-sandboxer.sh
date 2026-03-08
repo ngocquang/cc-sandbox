@@ -151,6 +151,7 @@ show_help() {
     echo ""
     echo -e "    ${GREEN}--init${NC}                    ${I_VSCODE} Setup devcontainer + VS Code tasks in project"
     echo -e "    ${GREEN}--rebuild${NC}                 ${I_PACKAGE} Force rebuild Docker image"
+    echo -e "    ${GREEN}--uninstall${NC}                ${I_CROSS} Remove image, volumes & cache"
     echo -e "    ${GREEN}--version${NC}, ${GREEN}-v${NC}             ${I_INFO} Show version"
     echo -e "    ${GREEN}--help${NC}, ${GREEN}-h${NC}                ${I_INFO} Show this help"
     echo ""
@@ -301,6 +302,53 @@ show_progress_line() {
     esac
 }
 
+# ── Uninstall ─────────────────────────────────────────────────
+uninstall_sandbox() {
+    show_banner
+    step "Uninstalling cc-sandboxer..."
+    echo ""
+
+    # Stop and remove running container
+    if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${CONTAINER_NAME}$"; then
+        docker rm -f "$CONTAINER_NAME" &>/dev/null || true
+        show_progress_line "Removed container ${CONTAINER_NAME}" "done"
+    else
+        show_progress_line "No running container found" "skip"
+    fi
+
+    # Remove Docker image
+    if docker image inspect "$IMAGE_NAME:$IMAGE_TAG" &>/dev/null 2>&1; then
+        docker rmi "$IMAGE_NAME:$IMAGE_TAG" &>/dev/null || true
+        show_progress_line "Removed image ${IMAGE_NAME}:${IMAGE_TAG}" "done"
+    else
+        show_progress_line "No image found" "skip"
+    fi
+
+    # Remove Docker volumes
+    local volumes=("claude-config" "claude-npm" "claude-history" "claude-code-config" "claude-code-npm" "claude-code-history")
+    for vol in "${volumes[@]}"; do
+        if docker volume inspect "$vol" &>/dev/null 2>&1; then
+            docker volume rm "$vol" &>/dev/null || true
+            show_progress_line "Removed volume ${vol}" "done"
+        fi
+    done
+
+    # Remove cached temp files
+    if [[ -d "${HOME}/.cache/cc-sandboxer" ]]; then
+        rm -rf "${HOME}/.cache/cc-sandboxer"
+        show_progress_line "Removed cache ${HOME}/.cache/cc-sandboxer" "done"
+    fi
+
+    echo ""
+    divider
+    echo ""
+    success "Uninstall complete ${I_CHECK}"
+    echo ""
+    echo -e "    ${DIM}To also remove the global npm package:${NC}"
+    echo -e "    ${GREEN}npm uninstall -g cc-sandboxer${NC}"
+    echo ""
+}
+
 # ══════════════════════════════════════════════════════════════
 # 🐳 CLI Mode — Docker direct
 # ══════════════════════════════════════════════════════════════
@@ -341,6 +389,8 @@ while [[ $# -gt 0 ]]; do
             CLAUDE_ARGS+=("-p" "$2"); shift 2 ;;
         --disallowedTools)
             CLAUDE_ARGS+=("--disallowedTools" "$2"); shift 2 ;;
+        --uninstall)
+            uninstall_sandbox; exit 0 ;;
         --version|-v)
             echo "cc-sandboxer v${SCRIPT_VERSION}"; exit 0 ;;
         --help|-h)

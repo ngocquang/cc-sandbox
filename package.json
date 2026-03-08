@@ -1,9 +1,9 @@
 {
   "name": "cc-sandboxer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Run claude --dangerously-skip-permissions safely inside a Docker sandbox",
   "bin": {
-    "cc-sandboxer": "./cc-sandboxer.sh"
+    "cc-sandboxer": "cc-sandboxer.sh"
   },
   "files": [
     "cc-sandboxer.sh",
