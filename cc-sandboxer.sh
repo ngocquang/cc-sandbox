@@ -159,18 +159,18 @@ init_vscode_project() {
     echo -e "    ${DIM}Target:${NC} ${WHITE}${target_path}${NC}"
     echo ""
 
-    # ── Create devcontainer/ ────────────────────────────────
-    local dc_dir="${target_path}/devcontainer"
+    # ── Create .devcontainer/ ───────────────────────────────
+    local dc_dir="${target_path}/.devcontainer"
     mkdir -p "$dc_dir"
 
     # Dockerfile — copy from the project's single source of truth
     cp "${SCRIPT_DIR}/docker/Dockerfile" "${dc_dir}/Dockerfile"
-    show_progress_line "Created devcontainer/Dockerfile" "done"
+    show_progress_line "Created .devcontainer/Dockerfile" "done"
 
     # Firewall script — copy from the project's init-firewall.sh
     cp "${SCRIPT_DIR}/docker/init-firewall.sh" "${dc_dir}/init-firewall.sh"
     chmod +x "${dc_dir}/init-firewall.sh"
-    show_progress_line "Created devcontainer/init-firewall.sh" "done"
+    show_progress_line "Created .devcontainer/init-firewall.sh" "done"
 
     # devcontainer.json — copy from the project's single source of truth
     cp "${SCRIPT_DIR}/devcontainer/devcontainer.json" "${dc_dir}/devcontainer.json"
@@ -178,7 +178,7 @@ init_vscode_project() {
     sed -i.bak 's|"dockerfile": "\.\./docker/Dockerfile"|"dockerfile": "Dockerfile"|' "${dc_dir}/devcontainer.json"
     sed -i.bak '/"context": "\.\.",/d' "${dc_dir}/devcontainer.json"
     rm -f "${dc_dir}/devcontainer.json.bak"
-    show_progress_line "Created devcontainer/devcontainer.json" "done"
+    show_progress_line "Created .devcontainer/devcontainer.json" "done"
 
     # ── Create .vscode/tasks.json ────────────────────────────
     local vscode_dir="${target_path}/.vscode"
@@ -202,7 +202,7 @@ init_vscode_project() {
     echo -e "  ${BOLD}${WHITE}Files created:${NC}"
     echo ""
     echo -e "    ${DIM}${target_path}/${NC}"
-    echo -e "    ${DIM}├── ${NC}${WHITE}devcontainer/${NC}"
+    echo -e "    ${DIM}├── ${NC}${WHITE}.devcontainer/${NC}"
     echo -e "    ${DIM}│   ├── ${NC}${CYAN}Dockerfile${NC}"
     echo -e "    ${DIM}│   ├── ${NC}${CYAN}devcontainer.json${NC}"
     echo -e "    ${DIM}│   └── ${NC}${CYAN}init-firewall.sh${NC}"
@@ -221,9 +221,10 @@ init_vscode_project() {
     echo ""
     echo -e "    ${YELLOW}3.${NC}  Login (first time only)"
     echo -e "        ${DIM}Cmd+Shift+P → \"Tasks: Run Task\" → \"${I_KEY} Claude: Login\"${NC}"
+    echo -e "        ${DIM}Or in terminal:${NC} ${GREEN}claude login${NC}"
     echo ""
     echo -e "    ${YELLOW}4.${NC}  Start Claude!"
-    echo -e "        ${DIM}Cmd+Shift+P → \"Tasks: Run Task\" → \"${I_BRAIN} Claude: Skip Permissions\"${NC}"
+    echo -e "        ${DIM}Wait for Claude Code extension to install, then use it normally.${NC}"
     echo ""
     echo -e "  ${BOLD}${WHITE}Available VS Code Tasks:${NC}"
     echo ""
