@@ -38,16 +38,16 @@ Một lệnh duy nhất. Cách ly hoàn toàn. Terminal hoặc VS Code.
 
 ```bash
 # Chạy trong thư mục hiện tại
-npx cc-sandbox
+npx cc-sandboxer
 
 # Chạy với dự án cụ thể
-npx cc-sandbox ~/projects/my-app
+npx cc-sandboxer ~/projects/my-app
 
 # Chạy một lệnh duy nhất
-npx cc-sandbox . -p "Sửa tất cả lỗi lint"
+npx cc-sandboxer . -p "Sửa tất cả lỗi lint"
 
 # Thiết lập VS Code DevContainer
-npx cc-sandbox --init ~/projects/my-app
+npx cc-sandboxer --init ~/projects/my-app
 ```
 
 ### Qua git clone
@@ -55,15 +55,15 @@ npx cc-sandbox --init ~/projects/my-app
 ```bash
 git clone https://github.com/ngocquang/cc-sandbox.git
 cd cc-sandbox
-chmod +x cc-sandbox.sh
-./cc-sandbox.sh
+chmod +x cc-sandboxer.sh
+./cc-sandboxer.sh
 ```
 
 ### VS Code (DevContainer)
 
 ```bash
 # Thiết lập DevContainer trong dự án
-npx cc-sandbox --init ~/projects/my-app
+npx cc-sandboxer --init ~/projects/my-app
 
 # Mở VS Code -> Reopen in Container -> Chạy task
 code ~/projects/my-app
@@ -92,14 +92,14 @@ code ~/projects/my-app
 ### Cách A — npx (không cần cài)
 
 ```bash
-npx cc-sandbox
+npx cc-sandboxer
 ```
 
 ### Cách B — Cài toàn cục
 
 ```bash
-npm install -g cc-sandbox
-cc-sandbox
+npm install -g cc-sandboxer
+cc-sandboxer
 ```
 
 ### Cách C — Clone repo
@@ -107,8 +107,8 @@ cc-sandbox
 ```bash
 git clone https://github.com/ngocquang/cc-sandbox.git
 cd cc-sandbox
-chmod +x cc-sandbox.sh
-./cc-sandbox.sh
+chmod +x cc-sandboxer.sh
+./cc-sandboxer.sh
 ```
 
 ### Alias cho Shell (tùy chọn)
@@ -116,7 +116,7 @@ chmod +x cc-sandbox.sh
 Thêm vào `~/.zshrc` hoặc `~/.bashrc` để truy cập nhanh:
 
 ```bash
-alias cc="npx cc-sandbox"
+alias cc="npx cc-sandboxer"
 ```
 
 Sau đó tải lại shell:
@@ -156,39 +156,39 @@ Với chế độ VS Code, cần cài thêm extension [Dev Containers](https://m
 ### Tương tác (khuyên dùng)
 
 ```bash
-cc-sandbox                     # thư mục hiện tại
-cc-sandbox ~/projects/my-app   # dự án cụ thể
+cc-sandboxer                     # thư mục hiện tại
+cc-sandboxer ~/projects/my-app   # dự án cụ thể
 ```
 
 ### Chạy lệnh một lần
 
 ```bash
-cc-sandbox . -p "Tái cấu trúc module auth và viết test"
-cc-sandbox . -p "Sửa tất cả lỗi ESLint và thêm type còn thiếu"
-cc-sandbox . -p "Đọc SPEC.md -> viết test fail -> implement -> lặp lại"
+cc-sandboxer . -p "Tái cấu trúc module auth và viết test"
+cc-sandboxer . -p "Sửa tất cả lỗi ESLint và thêm type còn thiếu"
+cc-sandboxer . -p "Đọc SPEC.md -> viết test fail -> implement -> lặp lại"
 ```
 
 ### Tiếp tục cuộc hội thoại trước
 
 ```bash
-cc-sandbox . --continue
+cc-sandboxer . --continue
 ```
 
 ### Chặn lệnh nguy hiểm
 
 ```bash
-cc-sandbox . --disallowedTools "Bash(rm:*)"
+cc-sandboxer . --disallowedTools "Bash(rm:*)"
 ```
 
 ### Chế độ shell
 
 ```bash
-cc-sandbox --shell
+cc-sandboxer --shell
 # Sau đó chạy thủ công bên trong:
 #   claude --dangerously-skip-permissions
 ```
 
-> Tất cả lệnh hoạt động với `npx cc-sandbox`, `cc-sandbox` (cài toàn cục), hoặc `./cc-sandbox.sh` (clone repo).
+> Tất cả lệnh hoạt động với `npx cc-sandboxer`, `cc-sandboxer` (cài toàn cục), hoặc `./cc-sandboxer.sh` (clone repo).
 
 ---
 
@@ -199,7 +199,7 @@ Flag `--init` thiết lập môi trường DevContainer đầy đủ trong dự 
 ### Thiết lập
 
 ```bash
-./cc-sandbox.sh --init ~/projects/my-app
+./cc-sandboxer.sh --init ~/projects/my-app
 ```
 
 Lệnh này tạo ra:
@@ -283,7 +283,7 @@ Tính năng bảo mật chính:
 
 ```bash
 # Chế độ CLI
-./cc-sandbox.sh --allow-domain "api.example.com" --allow-domain "docker.io"
+./cc-sandboxer.sh --allow-domain "api.example.com" --allow-domain "docker.io"
 
 # Chế độ DevContainer — sửa devcontainer/init-firewall.sh
 # Hoặc đặt biến môi trường trong devcontainer.json:
@@ -311,7 +311,7 @@ Tính năng bảo mật chính:
 | `EXTRA_ALLOWED_DOMAINS` | _(trống)_           | Domain cách nhau bởi dấu phẩy cho tường lửa (DevContainer) |
 
 ```bash
-TZ=America/New_York ./cc-sandbox.sh
+TZ=America/New_York ./cc-sandboxer.sh
 ```
 
 ### Tùy chỉnh DevContainer
@@ -365,7 +365,7 @@ Sau đó rebuild: `Cmd+Shift+P` -> `Dev Containers: Rebuild Container`
 ## Tất cả tùy chọn CLI
 
 ```text
-Cách dùng: cc-sandbox [project_path] [options]
+Cách dùng: cc-sandboxer [project_path] [options]
 
 Tham số:
   project_path              Đường dẫn đến dự án (mặc định: thư mục hiện tại)
@@ -394,7 +394,7 @@ Runtime:
 docker volume rm claude-config claude-npm claude-history
 
 # Xóa image
-docker rmi cc-sandbox:latest
+docker rmi cc-sandboxer:latest
 
 # Xóa volume DevContainer
 docker volume rm claude-code-config claude-code-npm claude-code-history
@@ -418,7 +418,7 @@ Trong chế độ DevContainer, kiểm tra `devcontainer.json` có:
 
 ```bash
 # Chế độ CLI
-./cc-sandbox.sh --shell
+./cc-sandboxer.sh --shell
 claude login
 
 # Chế độ VS Code
@@ -432,7 +432,7 @@ Các lần chạy sau dùng image đã cache.
 Buộc build lại để cập nhật Claude Code:
 
 ```bash
-./cc-sandbox.sh --rebuild
+./cc-sandboxer.sh --rebuild
 # hoặc trong VS Code:
 # Cmd+Shift+P -> Dev Containers: Rebuild Container
 ```
@@ -441,7 +441,7 @@ Buộc build lại để cập nhật Claude Code:
 
 ```bash
 # CLI
-./cc-sandbox.sh --allow-domain "your-domain.com"
+./cc-sandboxer.sh --allow-domain "your-domain.com"
 
 # DevContainer
 # thêm vào mảng ALLOWED_DOMAINS trong init-firewall.sh

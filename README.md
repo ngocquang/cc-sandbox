@@ -38,16 +38,16 @@ One command. Full isolation. Terminal or VS Code.
 
 ```bash
 # Run in current directory
-npx cc-sandbox
+npx cc-sandboxer
 
 # Run with a specific project
-npx cc-sandbox ~/projects/my-app
+npx cc-sandboxer ~/projects/my-app
 
 # One-shot task
-npx cc-sandbox . -p "Fix all lint errors"
+npx cc-sandboxer . -p "Fix all lint errors"
 
 # Setup VS Code DevContainer
-npx cc-sandbox --init ~/projects/my-app
+npx cc-sandboxer --init ~/projects/my-app
 ```
 
 ### Via git clone
@@ -55,15 +55,15 @@ npx cc-sandbox --init ~/projects/my-app
 ```bash
 git clone https://github.com/ngocquang/cc-sandbox.git
 cd cc-sandbox
-chmod +x cc-sandbox.sh
-./cc-sandbox.sh
+chmod +x cc-sandboxer.sh
+./cc-sandboxer.sh
 ```
 
 ### VS Code (DevContainer)
 
 ```bash
 # Setup DevContainer in your project
-npx cc-sandbox --init ~/projects/my-app
+npx cc-sandboxer --init ~/projects/my-app
 
 # Open in VS Code -> Reopen in Container -> Run tasks
 code ~/projects/my-app
@@ -92,14 +92,14 @@ code ~/projects/my-app
 ### Option A — npx (no install needed)
 
 ```bash
-npx cc-sandbox
+npx cc-sandboxer
 ```
 
 ### Option B — Global install
 
 ```bash
-npm install -g cc-sandbox
-cc-sandbox
+npm install -g cc-sandboxer
+cc-sandboxer
 ```
 
 ### Option C — Clone the repo
@@ -107,8 +107,8 @@ cc-sandbox
 ```bash
 git clone https://github.com/ngocquang/cc-sandbox.git
 cd cc-sandbox
-chmod +x cc-sandbox.sh
-./cc-sandbox.sh
+chmod +x cc-sandboxer.sh
+./cc-sandboxer.sh
 ```
 
 ### Shell Alias (optional)
@@ -116,7 +116,7 @@ chmod +x cc-sandbox.sh
 Add to your `~/.zshrc` or `~/.bashrc` for quick access:
 
 ```bash
-alias cc="npx cc-sandbox"
+alias cc="npx cc-sandboxer"
 ```
 
 Then reload your shell:
@@ -156,39 +156,39 @@ For VS Code mode, also install the [Dev Containers extension](https://marketplac
 ### Interactive (recommended)
 
 ```bash
-cc-sandbox                     # current directory
-cc-sandbox ~/projects/my-app   # specific project
+cc-sandboxer                     # current directory
+cc-sandboxer ~/projects/my-app   # specific project
 ```
 
 ### One-shot tasks
 
 ```bash
-cc-sandbox . -p "Refactor the auth module and write tests"
-cc-sandbox . -p "Fix all ESLint errors and add missing types"
-cc-sandbox . -p "Read SPEC.md -> write failing tests -> implement -> iterate"
+cc-sandboxer . -p "Refactor the auth module and write tests"
+cc-sandboxer . -p "Fix all ESLint errors and add missing types"
+cc-sandboxer . -p "Read SPEC.md -> write failing tests -> implement -> iterate"
 ```
 
 ### Resume previous conversation
 
 ```bash
-cc-sandbox . --continue
+cc-sandboxer . --continue
 ```
 
 ### Block dangerous commands
 
 ```bash
-cc-sandbox . --disallowedTools "Bash(rm:*)"
+cc-sandboxer . --disallowedTools "Bash(rm:*)"
 ```
 
 ### Shell mode
 
 ```bash
-cc-sandbox --shell
+cc-sandboxer --shell
 # Then run manually inside:
 #   claude --dangerously-skip-permissions
 ```
 
-> All commands work with `npx cc-sandbox`, `cc-sandbox` (global install), or `./cc-sandbox.sh` (cloned repo).
+> All commands work with `npx cc-sandboxer`, `cc-sandboxer` (global install), or `./cc-sandboxer.sh` (cloned repo).
 
 ---
 
@@ -199,7 +199,7 @@ The `--init` flag sets up a full DevContainer environment in your project — no
 ### Setup
 
 ```bash
-./cc-sandbox.sh --init ~/projects/my-app
+./cc-sandboxer.sh --init ~/projects/my-app
 ```
 
 This creates:
@@ -283,7 +283,7 @@ Key security features:
 
 ```bash
 # CLI mode
-./cc-sandbox.sh --allow-domain "api.example.com" --allow-domain "docker.io"
+./cc-sandboxer.sh --allow-domain "api.example.com" --allow-domain "docker.io"
 
 # DevContainer mode — edit devcontainer/init-firewall.sh
 # Or set the env var in devcontainer.json:
@@ -311,7 +311,7 @@ Key security features:
 | `EXTRA_ALLOWED_DOMAINS` | _(empty)_          | Comma-separated domains for firewall (DevContainer) |
 
 ```bash
-TZ=America/New_York ./cc-sandbox.sh
+TZ=America/New_York ./cc-sandboxer.sh
 ```
 
 ### Customize DevContainer
@@ -365,7 +365,7 @@ Then rebuild: `Cmd+Shift+P` -> `Dev Containers: Rebuild Container`
 ## All CLI Options
 
 ```text
-Usage: cc-sandbox [project_path] [options]
+Usage: cc-sandboxer [project_path] [options]
 
 Arguments:
   project_path              Path to project (default: current directory)
@@ -394,7 +394,7 @@ Runtime:
 docker volume rm claude-config claude-npm claude-history
 
 # Remove image
-docker rmi cc-sandbox:latest
+docker rmi cc-sandboxer:latest
 
 # Remove DevContainer volumes
 docker volume rm claude-code-config claude-code-npm claude-code-history
@@ -418,7 +418,7 @@ In DevContainer mode, check that `devcontainer.json` has:
 
 ```bash
 # CLI mode
-./cc-sandbox.sh --shell
+./cc-sandboxer.sh --shell
 claude login
 
 # VS Code mode
@@ -432,7 +432,7 @@ Subsequent runs use the cached image.
 Force rebuild to update Claude Code:
 
 ```bash
-./cc-sandbox.sh --rebuild
+./cc-sandboxer.sh --rebuild
 # or in VS Code:
 # Cmd+Shift+P -> Dev Containers: Rebuild Container
 ```
@@ -441,7 +441,7 @@ Force rebuild to update Claude Code:
 
 ```bash
 # CLI
-./cc-sandbox.sh --allow-domain "your-domain.com"
+./cc-sandboxer.sh --allow-domain "your-domain.com"
 
 # DevContainer
 # add to init-firewall.sh ALLOWED_DOMAINS array

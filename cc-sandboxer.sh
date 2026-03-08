@@ -11,9 +11,9 @@ set -euo pipefail
 SCRIPT_VERSION="1.0.0"
 
 # ── Config ───────────────────────────────────────────────────
-IMAGE_NAME="cc-sandbox"
+IMAGE_NAME="cc-sandboxer"
 IMAGE_TAG="latest"
-CONTAINER_NAME="cc-sandbox"
+CONTAINER_NAME="cc-sandboxer"
 TZ="${TZ:-Asia/Ho_Chi_Minh}"
 SOURCE="${BASH_SOURCE[0]}"
 while [[ -L "$SOURCE" ]]; do
@@ -94,7 +94,7 @@ show_help() {
     show_banner
     echo -e "  ${BOLD}${WHITE}USAGE${NC}"
     echo ""
-    echo -e "    ${GREEN}cc-sandbox${NC} ${DIM}[project_path]${NC} ${DIM}[options]${NC}"
+    echo -e "    ${GREEN}cc-sandboxer${NC} ${DIM}[project_path]${NC} ${DIM}[options]${NC}"
     echo ""
     echo -e "  ${BOLD}${WHITE}MODES${NC}"
     echo ""
@@ -124,19 +124,19 @@ show_help() {
     echo -e "  ${BOLD}${WHITE}EXAMPLES${NC}"
     echo ""
     echo -e "    ${DIM}# Quick start — interactive mode${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandbox"
+    echo -e "    ${GREEN}\$${NC} cc-sandboxer"
     echo ""
     echo -e "    ${DIM}# Setup VS Code DevContainer in your project${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandbox --init ~/projects/my-app"
+    echo -e "    ${GREEN}\$${NC} cc-sandboxer --init ~/projects/my-app"
     echo ""
     echo -e "    ${DIM}# One-shot task${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandbox . -p \"Refactor auth and write tests\""
+    echo -e "    ${GREEN}\$${NC} cc-sandboxer . -p \"Refactor auth and write tests\""
     echo ""
     echo -e "    ${DIM}# Resume last conversation${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandbox . --continue"
+    echo -e "    ${GREEN}\$${NC} cc-sandboxer . --continue"
     echo ""
     echo -e "    ${DIM}# Safe mode — block rm commands${NC}"
-    echo -e "    ${GREEN}\$${NC} cc-sandbox . --disallowedTools \"Bash(rm:*)\""
+    echo -e "    ${GREEN}\$${NC} cc-sandboxer . --disallowedTools \"Bash(rm:*)\""
     echo ""
     echo -e "  ${BOLD}${WHITE}ENVIRONMENT${NC}"
     echo ""
@@ -299,7 +299,7 @@ while [[ $# -gt 0 ]]; do
         --disallowedTools)
             CLAUDE_ARGS+=("--disallowedTools" "$2"); shift 2 ;;
         --version|-v)
-            echo "cc-sandbox v${SCRIPT_VERSION}"; exit 0 ;;
+            echo "cc-sandboxer v${SCRIPT_VERSION}"; exit 0 ;;
         --help|-h)
             show_help; exit 0 ;;
         -*)
@@ -326,8 +326,8 @@ if [[ ! -d "$PROJECT_PATH" ]]; then
         err "Project path not found: ${PROJECT_PATH:-<empty>}"
         echo ""
         echo -e "    ${BOLD}${WHITE}Usage:${NC}"
-        echo -e "    ${GREEN}cc-sandbox${NC} ${DIM}[project_path]${NC}"
-        echo -e "    ${GREEN}cc-sandbox --init${NC} ${DIM}~/projects/my-app${NC}"
+        echo -e "    ${GREEN}cc-sandboxer${NC} ${DIM}[project_path]${NC}"
+        echo -e "    ${GREEN}cc-sandboxer --init${NC} ${DIM}~/projects/my-app${NC}"
         echo ""
         exit 1
     fi
@@ -406,7 +406,7 @@ build_image() {
         echo ""
 
         local build_log
-        build_log=$(mktemp /tmp/cc-sandbox-build-XXXXXXXX)
+        build_log=$(mktemp /tmp/cc-sandboxer-build-XXXXXXXX)
 
         # Count total steps from Dockerfile (each instruction = 1 step)
         local total_steps
@@ -606,7 +606,7 @@ run_container() {
         # Colima only shares $HOME into its VM — /tmp and $TMPDIR (/var/folders)
         # are not accessible, causing Docker to mount them as empty directories.
         # Place temp file under $HOME to ensure visibility across all runtimes.
-        local tmp_base="${HOME}/.cache/cc-sandbox"
+        local tmp_base="${HOME}/.cache/cc-sandboxer"
         mkdir -p "$tmp_base"
         fw_tmp=$(mktemp "${tmp_base}/fw-XXXXXXXX")
         gen_firewall_file "$fw_tmp"
@@ -674,8 +674,8 @@ main() {
     echo ""
     success "Session ended. Your project files are safe ${I_SHIELD}"
     echo ""
-    echo -e "    ${DIM}Run again :${NC}  ${GREEN}cc-sandbox${NC}"
-    echo -e "    ${DIM}Resume   :${NC}  ${GREEN}cc-sandbox --continue${NC}"
+    echo -e "    ${DIM}Run again :${NC}  ${GREEN}cc-sandboxer${NC}"
+    echo -e "    ${DIM}Resume   :${NC}  ${GREEN}cc-sandboxer --continue${NC}"
     echo ""
 }
 

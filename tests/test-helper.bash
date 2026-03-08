@@ -2,7 +2,7 @@
 # test-helper.bash — shared setup for bats tests
 
 export PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export SCRIPT="${PROJECT_ROOT}/cc-sandbox.sh"
+export SCRIPT="${PROJECT_ROOT}/cc-sandboxer.sh"
 export FIREWALL_SCRIPT="${PROJECT_ROOT}/docker/init-firewall.sh"
 
 # Create temp directory for each test
@@ -15,7 +15,7 @@ teardown_temp() {
     [[ -d "${TEST_TEMP:-}" ]] && rm -rf "$TEST_TEMP"
 }
 
-# Source only the functions from cc-sandbox.sh without executing main
+# Source only the functions from cc-sandboxer.sh without executing main
 # by extracting function definitions
 source_functions() {
     # Set SCRIPT_DIR so gen_firewall_file can find docker/init-firewall.sh

@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# Unit tests for cc-sandbox.sh
+# Unit tests for cc-sandboxer.sh
 
 load test-helper.bash
 
@@ -18,20 +18,20 @@ teardown() {
 @test "version flag prints version and exits 0" {
     run bash "$SCRIPT" --version
     [ "$status" -eq 0 ]
-    [[ "$output" == *"cc-sandbox v1.0.0"* ]]
+    [[ "$output" == *"cc-sandboxer v1.0.0"* ]]
 }
 
 @test "short version flag -v works" {
     run bash "$SCRIPT" -v
     [ "$status" -eq 0 ]
-    [[ "$output" == *"cc-sandbox v1.0.0"* ]]
+    [[ "$output" == *"cc-sandboxer v1.0.0"* ]]
 }
 
 @test "help flag shows usage info" {
     run bash "$SCRIPT" --help
     [ "$status" -eq 0 ]
     [[ "$output" == *"USAGE"* ]]
-    [[ "$output" == *"cc-sandbox"* ]]
+    [[ "$output" == *"cc-sandboxer"* ]]
     [[ "$output" == *"OPTIONS"* ]]
 }
 

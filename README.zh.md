@@ -38,16 +38,16 @@
 
 ```bash
 # 在当前目录运行
-npx cc-sandbox
+npx cc-sandboxer
 
 # 指定项目运行
-npx cc-sandbox ~/projects/my-app
+npx cc-sandboxer ~/projects/my-app
 
 # 一次性任务
-npx cc-sandbox . -p "修复所有 lint 错误"
+npx cc-sandboxer . -p "修复所有 lint 错误"
 
 # 设置 VS Code DevContainer
-npx cc-sandbox --init ~/projects/my-app
+npx cc-sandboxer --init ~/projects/my-app
 ```
 
 ### 通过 git clone
@@ -55,15 +55,15 @@ npx cc-sandbox --init ~/projects/my-app
 ```bash
 git clone https://github.com/ngocquang/cc-sandbox.git
 cd cc-sandbox
-chmod +x cc-sandbox.sh
-./cc-sandbox.sh
+chmod +x cc-sandboxer.sh
+./cc-sandboxer.sh
 ```
 
 ### VS Code（DevContainer）
 
 ```bash
 # 在项目中设置 DevContainer
-npx cc-sandbox --init ~/projects/my-app
+npx cc-sandboxer --init ~/projects/my-app
 
 # 在 VS Code 中打开 -> 在容器中重新打开 -> 运行任务
 code ~/projects/my-app
@@ -92,14 +92,14 @@ code ~/projects/my-app
 ### 方式 A — npx（无需安装）
 
 ```bash
-npx cc-sandbox
+npx cc-sandboxer
 ```
 
 ### 方式 B — 全局安装
 
 ```bash
-npm install -g cc-sandbox
-cc-sandbox
+npm install -g cc-sandboxer
+cc-sandboxer
 ```
 
 ### 方式 C — 克隆仓库
@@ -107,8 +107,8 @@ cc-sandbox
 ```bash
 git clone https://github.com/ngocquang/cc-sandbox.git
 cd cc-sandbox
-chmod +x cc-sandbox.sh
-./cc-sandbox.sh
+chmod +x cc-sandboxer.sh
+./cc-sandboxer.sh
 ```
 
 ### Shell 别名（可选）
@@ -116,7 +116,7 @@ chmod +x cc-sandbox.sh
 添加到 `~/.zshrc` 或 `~/.bashrc` 以便快速访问：
 
 ```bash
-alias cc="npx cc-sandbox"
+alias cc="npx cc-sandboxer"
 ```
 
 然后重新加载 shell：
@@ -156,39 +156,39 @@ VS Code 模式还需安装 [Dev Containers 扩展](https://marketplace.visualstu
 ### 交互式（推荐）
 
 ```bash
-cc-sandbox                     # 当前目录
-cc-sandbox ~/projects/my-app   # 指定项目
+cc-sandboxer                     # 当前目录
+cc-sandboxer ~/projects/my-app   # 指定项目
 ```
 
 ### 一次性任务
 
 ```bash
-cc-sandbox . -p "重构 auth 模块并编写测试"
-cc-sandbox . -p "修复所有 ESLint 错误并补充缺失的类型"
-cc-sandbox . -p "读取 SPEC.md -> 编写失败测试 -> 实现 -> 迭代"
+cc-sandboxer . -p "重构 auth 模块并编写测试"
+cc-sandboxer . -p "修复所有 ESLint 错误并补充缺失的类型"
+cc-sandboxer . -p "读取 SPEC.md -> 编写失败测试 -> 实现 -> 迭代"
 ```
 
 ### 继续上次对话
 
 ```bash
-cc-sandbox . --continue
+cc-sandboxer . --continue
 ```
 
 ### 阻止危险命令
 
 ```bash
-cc-sandbox . --disallowedTools "Bash(rm:*)"
+cc-sandboxer . --disallowedTools "Bash(rm:*)"
 ```
 
 ### Shell 模式
 
 ```bash
-cc-sandbox --shell
+cc-sandboxer --shell
 # 然后在里面手动运行：
 #   claude --dangerously-skip-permissions
 ```
 
-> 所有命令均可使用 `npx cc-sandbox`、`cc-sandbox`（全局安装）或 `./cc-sandbox.sh`（克隆仓库）。
+> 所有命令均可使用 `npx cc-sandboxer`、`cc-sandboxer`（全局安装）或 `./cc-sandboxer.sh`（克隆仓库）。
 
 ---
 
@@ -199,7 +199,7 @@ cc-sandbox --shell
 ### 设置
 
 ```bash
-./cc-sandbox.sh --init ~/projects/my-app
+./cc-sandboxer.sh --init ~/projects/my-app
 ```
 
 这会创建：
@@ -283,7 +283,7 @@ claude login
 
 ```bash
 # CLI 模式
-./cc-sandbox.sh --allow-domain "api.example.com" --allow-domain "docker.io"
+./cc-sandboxer.sh --allow-domain "api.example.com" --allow-domain "docker.io"
 
 # DevContainer 模式 — 编辑 devcontainer/init-firewall.sh
 # 或在 devcontainer.json 中设置环境变量：
@@ -311,7 +311,7 @@ claude login
 | `EXTRA_ALLOWED_DOMAINS` | _（空）_             | 逗号分隔的域名，用于防火墙（DevContainer）        |
 
 ```bash
-TZ=America/New_York ./cc-sandbox.sh
+TZ=America/New_York ./cc-sandboxer.sh
 ```
 
 ### 自定义 DevContainer
@@ -365,7 +365,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 ## 所有 CLI 选项
 
 ```text
-用法：cc-sandbox [project_path] [options]
+用法：cc-sandboxer [project_path] [options]
 
 参数：
   project_path              项目路径（默认：当前目录）
@@ -394,7 +394,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 docker volume rm claude-config claude-npm claude-history
 
 # 删除镜像
-docker rmi cc-sandbox:latest
+docker rmi cc-sandboxer:latest
 
 # 删除 DevContainer volumes
 docker volume rm claude-code-config claude-code-npm claude-code-history
@@ -418,7 +418,7 @@ DevContainer 模式下，检查 `devcontainer.json` 是否包含：
 
 ```bash
 # CLI 模式
-./cc-sandbox.sh --shell
+./cc-sandboxer.sh --shell
 claude login
 
 # VS Code 模式
@@ -432,7 +432,7 @@ claude login
 强制重建以更新 Claude Code：
 
 ```bash
-./cc-sandbox.sh --rebuild
+./cc-sandboxer.sh --rebuild
 # 或在 VS Code 中：
 # Cmd+Shift+P -> Dev Containers: Rebuild Container
 ```
@@ -441,7 +441,7 @@ claude login
 
 ```bash
 # CLI
-./cc-sandbox.sh --allow-domain "your-domain.com"
+./cc-sandboxer.sh --allow-domain "your-domain.com"
 
 # DevContainer
 # 添加到 init-firewall.sh 的 ALLOWED_DOMAINS 数组
