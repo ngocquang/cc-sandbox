@@ -4,6 +4,7 @@
 export PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export SCRIPT="${PROJECT_ROOT}/cc-sandboxer.sh"
 export FIREWALL_SCRIPT="${PROJECT_ROOT}/docker/init-firewall.sh"
+export PKG_VERSION=$(grep -o '"version": *"[^"]*"' "${PROJECT_ROOT}/package.json" 2>/dev/null | head -1 | grep -o '[0-9][0-9.]*' || echo "0.0.0")
 
 # Create temp directory for each test
 setup_temp() {

@@ -7,9 +7,6 @@
 
 set -euo pipefail
 
-# ── Version ──────────────────────────────────────────────────
-SCRIPT_VERSION="1.0.0"
-
 # ── Config ───────────────────────────────────────────────────
 IMAGE_NAME="cc-sandboxer"
 IMAGE_TAG="latest"
@@ -22,6 +19,9 @@ while [[ -L "$SOURCE" ]]; do
     [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 SCRIPT_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+
+# ── Version (read from package.json) ─────────────────────────
+SCRIPT_VERSION=$(grep -o '"version": *"[^"]*"' "${SCRIPT_DIR}/package.json" 2>/dev/null | head -1 | grep -o '[0-9][0-9.]*' || echo "0.0.0")
 
 # ── Colors & Styles ──────────────────────────────────────────
 RED='\033[0;31m'
@@ -67,6 +67,48 @@ success() { echo -e "  ${GREEN}${I_SPARKLE}${NC} ${GREEN}${BOLD}$*${NC}"; }
 
 divider() {
     echo -e "  ${DIM}─────────────────────────────────────────────────────────${NC}"
+}
+
+# ── Update check (non-blocking) ──────────────────────────────
+UPDATE_CHECK_FILE=""
+
+check_update_background() {
+    UPDATE_CHECK_FILE=$(mktemp /tmp/cc-sandboxer-update-XXXXXXXX)
+    (
+        local latest
+        latest=$(curl -sf --max-time 3 "https://registry.npmjs.org/cc-sandboxer/latest" 2>/dev/null \
+            | grep -o '"version":"[^"]*"' | head -1 | grep -o '[0-9][0-9.]*') || true
+        if [[ -n "$latest" && "$latest" != "$SCRIPT_VERSION" ]]; then
+            # Compare versions: check if latest is newer
+            local IFS='.'
+            read -ra current_parts <<< "$SCRIPT_VERSION"
+            read -ra latest_parts <<< "$latest"
+            local i is_newer=false
+            for i in 0 1 2; do
+                local c="${current_parts[$i]:-0}"
+                local l="${latest_parts[$i]:-0}"
+                if (( l > c )); then
+                    is_newer=true; break
+                elif (( l < c )); then
+                    break
+                fi
+            done
+            if [[ "$is_newer" == "true" ]]; then
+                echo "$latest" > "$UPDATE_CHECK_FILE"
+            fi
+        fi
+    ) &>/dev/null &
+}
+
+show_update_notice() {
+    if [[ -n "${UPDATE_CHECK_FILE:-}" && -s "$UPDATE_CHECK_FILE" ]]; then
+        local latest
+        latest=$(cat "$UPDATE_CHECK_FILE")
+        echo ""
+        echo -e "  ${YELLOW}${I_WARN}  ${BOLD}Update available!${NC} ${DIM}v${SCRIPT_VERSION}${NC} → ${GREEN}${BOLD}v${latest}${NC}"
+        echo -e "     ${DIM}Run${NC} ${GREEN}\"npm update -g cc-sandboxer\"${NC} ${DIM}to update${NC}"
+    fi
+    [[ -f "${UPDATE_CHECK_FILE:-}" ]] && rm -f "$UPDATE_CHECK_FILE"
 }
 
 # ── Banner ───────────────────────────────────────────────────
@@ -660,11 +702,21 @@ run_container() {
 # 🏁 Main
 # ══════════════════════════════════════════════════════════════
 main() {
+    check_update_background
     show_banner
     detect_runtime
 
     echo ""
     build_image
+
+    # --rebuild: just build and exit, don't run Claude
+    if [[ "$FORCE_REBUILD" == true ]]; then
+        echo ""
+        success "Rebuild complete ${I_SPARKLE}"
+        show_update_notice
+        echo ""
+        exit 0
+    fi
 
     echo ""
     run_container
@@ -677,6 +729,7 @@ main() {
     echo ""
     echo -e "    ${DIM}Run again :${NC}  ${GREEN}cc-sandboxer${NC}"
     echo -e "    ${DIM}Resume   :${NC}  ${GREEN}cc-sandboxer --continue${NC}"
+    show_update_notice
     echo ""
 }
 
