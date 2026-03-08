@@ -478,93 +478,6 @@ uninstall_sandbox() {
     echo ""
 }
 
-# ══════════════════════════════════════════════════════════════
-# 🐳 CLI Mode — Docker direct
-# ══════════════════════════════════════════════════════════════
-
-# ── Parse args ───────────────────────────────────────────────
-PROJECT_PATH=""
-CLAUDE_ARGS=()
-FORCE_REBUILD=false
-SHELL_ONLY=false
-NO_FIREWALL=false
-INIT_MODE=false
-EXTRA_DOMAINS=()
-
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --init)
-            INIT_MODE=true; shift ;;
-        --rebuild)
-            FORCE_REBUILD=true; shift ;;
-        --shell)
-            SHELL_ONLY=true; shift ;;
-        --no-firewall)
-            NO_FIREWALL=true; shift ;;
-        --allow-domain)
-            if [[ -z "${2:-}" || "$2" == --* ]]; then
-                err "--allow-domain requires a domain argument"
-                exit 1
-            fi
-            # Validate domain format (alphanumeric, dots, hyphens, wildcards)
-            if [[ ! "$2" =~ ^[a-zA-Z0-9.*-]+$ ]]; then
-                err "Invalid domain format: $2"
-                exit 1
-            fi
-            EXTRA_DOMAINS+=("$2"); shift 2 ;;
-        --continue|-c)
-            CLAUDE_ARGS+=("--continue"); shift ;;
-        -p)
-            CLAUDE_ARGS+=("-p" "$2"); shift 2 ;;
-        --disallowedTools)
-            CLAUDE_ARGS+=("--disallowedTools" "$2"); shift 2 ;;
-        --update)
-            update_sandbox; exit 0 ;;
-        --uninstall)
-            uninstall_sandbox; exit 0 ;;
-        --version|-v)
-            echo "cc-sandboxer v${SCRIPT_VERSION}"; exit 0 ;;
-        --help|-h)
-            show_help; exit 0 ;;
-        -*)
-            CLAUDE_ARGS+=("$1"); shift ;;
-        *)
-            if [[ -z "$PROJECT_PATH" ]]; then
-                PROJECT_PATH="$1"
-            else
-                CLAUDE_ARGS+=("$1")
-            fi
-            shift ;;
-    esac
-done
-
-# Default project path
-if [[ -z "$PROJECT_PATH" ]]; then
-    PROJECT_PATH="$(pwd)"
-fi
-# Create directory if it doesn't exist (useful for --init with new projects)
-if [[ ! -d "$PROJECT_PATH" ]]; then
-    if [[ "$INIT_MODE" == "true" ]]; then
-        mkdir -p "$PROJECT_PATH"
-    else
-        err "Project path not found: ${PROJECT_PATH:-<empty>}"
-        echo ""
-        echo -e "    ${BOLD}${WHITE}Usage:${NC}"
-        echo -e "    ${GREEN}${CMD_PREFIX}${NC} ${DIM}[project_path]${NC}"
-        echo -e "    ${GREEN}${CMD_PREFIX} --init${NC} ${DIM}~/projects/my-app${NC}"
-        echo ""
-        exit 1
-    fi
-fi
-PROJECT_PATH="$(cd "$PROJECT_PATH" && pwd)"
-PROJECT_NAME="$(basename "$PROJECT_PATH")"
-
-# ── Handle --init mode ──────────────────────────────────────
-if [[ "$INIT_MODE" == "true" ]]; then
-    init_vscode_project "$PROJECT_PATH"
-    exit 0
-fi
-
 # ── Detect container runtime ─────────────────────────────────
 detect_runtime() {
     step "Detecting container runtime..."
@@ -878,6 +791,93 @@ run_container() {
     # Cleanup temp firewall file
     [[ -f "${fw_tmp:-}" ]] && rm -f "$fw_tmp"
 }
+
+# ══════════════════════════════════════════════════════════════
+# 🐳 CLI Mode — Docker direct
+# ══════════════════════════════════════════════════════════════
+
+# ── Parse args ───────────────────────────────────────────────
+PROJECT_PATH=""
+CLAUDE_ARGS=()
+FORCE_REBUILD=false
+SHELL_ONLY=false
+NO_FIREWALL=false
+INIT_MODE=false
+EXTRA_DOMAINS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --init)
+            INIT_MODE=true; shift ;;
+        --rebuild)
+            FORCE_REBUILD=true; shift ;;
+        --shell)
+            SHELL_ONLY=true; shift ;;
+        --no-firewall)
+            NO_FIREWALL=true; shift ;;
+        --allow-domain)
+            if [[ -z "${2:-}" || "$2" == --* ]]; then
+                err "--allow-domain requires a domain argument"
+                exit 1
+            fi
+            # Validate domain format (alphanumeric, dots, hyphens, wildcards)
+            if [[ ! "$2" =~ ^[a-zA-Z0-9.*-]+$ ]]; then
+                err "Invalid domain format: $2"
+                exit 1
+            fi
+            EXTRA_DOMAINS+=("$2"); shift 2 ;;
+        --continue|-c)
+            CLAUDE_ARGS+=("--continue"); shift ;;
+        -p)
+            CLAUDE_ARGS+=("-p" "$2"); shift 2 ;;
+        --disallowedTools)
+            CLAUDE_ARGS+=("--disallowedTools" "$2"); shift 2 ;;
+        --update)
+            update_sandbox; exit 0 ;;
+        --uninstall)
+            uninstall_sandbox; exit 0 ;;
+        --version|-v)
+            echo "cc-sandboxer v${SCRIPT_VERSION}"; exit 0 ;;
+        --help|-h)
+            show_help; exit 0 ;;
+        -*)
+            CLAUDE_ARGS+=("$1"); shift ;;
+        *)
+            if [[ -z "$PROJECT_PATH" ]]; then
+                PROJECT_PATH="$1"
+            else
+                CLAUDE_ARGS+=("$1")
+            fi
+            shift ;;
+    esac
+done
+
+# Default project path
+if [[ -z "$PROJECT_PATH" ]]; then
+    PROJECT_PATH="$(pwd)"
+fi
+# Create directory if it doesn't exist (useful for --init with new projects)
+if [[ ! -d "$PROJECT_PATH" ]]; then
+    if [[ "$INIT_MODE" == "true" ]]; then
+        mkdir -p "$PROJECT_PATH"
+    else
+        err "Project path not found: ${PROJECT_PATH:-<empty>}"
+        echo ""
+        echo -e "    ${BOLD}${WHITE}Usage:${NC}"
+        echo -e "    ${GREEN}${CMD_PREFIX}${NC} ${DIM}[project_path]${NC}"
+        echo -e "    ${GREEN}${CMD_PREFIX} --init${NC} ${DIM}~/projects/my-app${NC}"
+        echo ""
+        exit 1
+    fi
+fi
+PROJECT_PATH="$(cd "$PROJECT_PATH" && pwd)"
+PROJECT_NAME="$(basename "$PROJECT_PATH")"
+
+# ── Handle --init mode ──────────────────────────────────────
+if [[ "$INIT_MODE" == "true" ]]; then
+    init_vscode_project "$PROJECT_PATH"
+    exit 0
+fi
 
 # ══════════════════════════════════════════════════════════════
 # 🏁 Main
