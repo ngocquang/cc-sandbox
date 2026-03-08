@@ -373,6 +373,7 @@ Arguments:
 Setup:
   --init                    Setup devcontainer + VS Code tasks in project
   --rebuild                 Force rebuild Docker image
+  --update                  Update to latest version & rebuild image
   --uninstall               Remove image, volumes & cache
   --version, -v             Show version
   --help, -h                Show help

@@ -121,7 +121,7 @@ show_update_notice() {
         latest=$(cat "$UPDATE_CHECK_FILE")
         echo ""
         echo -e "  ${YELLOW}${I_WARN}  ${BOLD}Update available!${NC} ${DIM}v${SCRIPT_VERSION}${NC} → ${GREEN}${BOLD}v${latest}${NC}"
-        echo -e "     ${DIM}Run${NC} ${GREEN}\"npm update -g cc-sandboxer\"${NC} ${DIM}to update${NC}"
+        echo -e "     ${DIM}Run${NC} ${GREEN}\"${CMD_PREFIX} --update\"${NC} ${DIM}to update${NC}"
     fi
     [[ -f "${UPDATE_CHECK_FILE:-}" ]] && rm -f "$UPDATE_CHECK_FILE"
 }
@@ -166,6 +166,7 @@ show_help() {
     echo ""
     echo -e "    ${GREEN}--init${NC}                    ${I_VSCODE} Setup devcontainer + VS Code tasks in project"
     echo -e "    ${GREEN}--rebuild${NC}                 ${I_PACKAGE} Force rebuild Docker image"
+    echo -e "    ${GREEN}--update${NC}                   ${I_PACKAGE} Update to latest version & rebuild image"
     echo -e "    ${GREEN}--uninstall${NC}                ${I_CROSS} Remove image, volumes & cache"
     echo -e "    ${GREEN}--version${NC}, ${GREEN}-v${NC}             ${I_INFO} Show version"
     echo -e "    ${GREEN}--help${NC}, ${GREEN}-h${NC}                ${I_INFO} Show this help"
@@ -350,6 +351,81 @@ show_progress_line() {
     esac
 }
 
+# ── Update ────────────────────────────────────────────────────
+update_sandbox() {
+    show_banner
+    step "Checking for updates..."
+    echo ""
+
+    # Fetch latest version from npm registry
+    local latest
+    latest=$(curl -sf --max-time 10 "https://registry.npmjs.org/cc-sandboxer/latest" 2>/dev/null \
+        | grep -o '"version":"[^"]*"' | head -1 | grep -o '[0-9][0-9.]*') || true
+
+    if [[ -z "$latest" ]]; then
+        err "Could not fetch latest version from npm registry"
+        exit 1
+    fi
+
+    echo -e "    ${DIM}Current:${NC} ${WHITE}v${SCRIPT_VERSION}${NC}"
+    echo -e "    ${DIM}Latest:${NC}  ${WHITE}v${latest}${NC}"
+    echo ""
+
+    # Check if already up to date
+    if [[ "$latest" == "$SCRIPT_VERSION" ]]; then
+        success "Already up to date! ${I_CHECK}"
+        echo ""
+        exit 0
+    fi
+
+    # Detect install method and update accordingly
+    if [[ "${SCRIPT_DIR}" == *"/_npx/"* ]] || [[ "${SCRIPT_DIR}" == *"/.npm/_npx"* ]]; then
+        # npx always fetches latest — clear cache so next run gets new version
+        echo -e "  ${I_PACKAGE}  ${BOLD}Install method:${NC} npx"
+        echo ""
+        step "Clearing npx cache..."
+        npx --yes clear-npx-cache 2>/dev/null || npm cache clean --force 2>/dev/null || true
+        echo ""
+        success "Cache cleared! Next ${GREEN}npx cc-sandboxer${NC} will use ${GREEN}v${latest}${NC} ${I_CHECK}"
+
+    elif [[ "${SCRIPT_DIR}" == *"/node_modules/.bin"* ]] || command -v cc-sandboxer &>/dev/null; then
+        # Global npm install
+        echo -e "  ${I_PACKAGE}  ${BOLD}Install method:${NC} npm global"
+        echo ""
+        step "Updating via npm..."
+        echo ""
+        npm update -g cc-sandboxer
+        echo ""
+        local new_ver
+        new_ver=$(grep -o '"version": *"[^"]*"' "$(npm root -g)/cc-sandboxer/package.json" 2>/dev/null | head -1 | grep -o '[0-9][0-9.]*' || echo "unknown")
+        success "Updated to v${new_ver} ${I_CHECK}"
+
+    else
+        # Git clone
+        echo -e "  ${I_PACKAGE}  ${BOLD}Install method:${NC} git clone"
+        echo ""
+        step "Updating via git pull..."
+        echo ""
+        (cd "$SCRIPT_DIR" && git pull)
+        echo ""
+        local new_ver
+        new_ver=$(grep -o '"version": *"[^"]*"' "${SCRIPT_DIR}/package.json" 2>/dev/null | head -1 | grep -o '[0-9][0-9.]*' || echo "unknown")
+        success "Updated to v${new_ver} ${I_CHECK}"
+    fi
+
+    # Rebuild Docker image with new version
+    echo ""
+    divider
+    echo ""
+    step "Rebuilding Docker image with latest version..."
+    echo ""
+    FORCE_REBUILD=true
+    build_image
+    echo ""
+    success "Update complete! ${I_SPARKLE}"
+    echo ""
+}
+
 # ── Uninstall ─────────────────────────────────────────────────
 uninstall_sandbox() {
     show_banner
@@ -437,6 +513,8 @@ while [[ $# -gt 0 ]]; do
             CLAUDE_ARGS+=("-p" "$2"); shift 2 ;;
         --disallowedTools)
             CLAUDE_ARGS+=("--disallowedTools" "$2"); shift 2 ;;
+        --update)
+            update_sandbox; exit 0 ;;
         --uninstall)
             uninstall_sandbox; exit 0 ;;
         --version|-v)

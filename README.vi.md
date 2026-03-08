@@ -373,6 +373,7 @@ Tham số:
 Thiết lập:
   --init                    Tạo devcontainer + VS Code tasks trong dự án
   --rebuild                 Buộc build lại Docker image
+  --update                  Cập nhật lên phiên bản mới nhất & build lại image
   --uninstall               Xóa image, volumes & cache
   --version, -v             Hiển thị phiên bản
   --help, -h                Hiển thị trợ giúp

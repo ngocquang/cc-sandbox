@@ -373,6 +373,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 设置：
   --init                    在项目中创建 devcontainer + VS Code 任务
   --rebuild                 强制重建 Docker 镜像
+  --update                  更新到最新版本并重建镜像
   --uninstall               删除镜像、volumes 和缓存
   --version, -v             显示版本
   --help, -h                显示帮助
