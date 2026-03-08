@@ -392,11 +392,8 @@ ENV PATH=$PATH:/usr/local/go/bin
 ## 清理
 
 ```bash
-# 一条命令 — 删除镜像、volumes 和缓存
+# 一条命令 — 删除镜像、volumes、缓存和全局 npm 包
 cc-sandboxer --uninstall
-
-# 同时卸载全局 npm 包
-npm uninstall -g cc-sandboxer
 ```
 
 或手动：

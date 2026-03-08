@@ -463,13 +463,18 @@ uninstall_sandbox() {
         show_progress_line "Removed cache ${HOME}/.cache/cc-sandboxer" "done"
     fi
 
+    # Remove global npm package
+    if command -v npm &>/dev/null && npm list -g cc-sandboxer &>/dev/null 2>&1; then
+        npm uninstall -g cc-sandboxer &>/dev/null || true
+        show_progress_line "Removed global npm package cc-sandboxer" "done"
+    else
+        show_progress_line "No global npm package found" "skip"
+    fi
+
     echo ""
     divider
     echo ""
     success "Uninstall complete ${I_CHECK}"
-    echo ""
-    echo -e "    ${DIM}To also remove the global npm package:${NC}"
-    echo -e "    ${GREEN}npm uninstall -g cc-sandboxer${NC}"
     echo ""
 }
 

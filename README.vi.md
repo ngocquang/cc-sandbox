@@ -392,11 +392,8 @@ Runtime:
 ## Dọn dẹp
 
 ```bash
-# Một lệnh — xóa image, volumes & cache
+# Một lệnh — xóa image, volumes, cache & package npm global
 cc-sandboxer --uninstall
-
-# Để xóa luôn package npm global
-npm uninstall -g cc-sandboxer
 ```
 
 Hoặc thủ công:

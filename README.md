@@ -392,11 +392,8 @@ Runtime:
 ## Cleanup
 
 ```bash
-# One command — removes image, volumes & cache
+# One command — removes image, volumes, cache & global npm package
 cc-sandboxer --uninstall
-
-# To also remove the global npm package
-npm uninstall -g cc-sandboxer
 ```
 
 Or manually:
