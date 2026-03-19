@@ -140,7 +140,7 @@ cc . --continue
 
 Bạn cần **một** trong các container runtime sau:
 
-> **Lưu ý:** Chỉ hỗ trợ **macOS** và **Linux**. Không hỗ trợ Windows.
+> **Lưu ý:** Hỗ trợ **macOS** và **Linux** trực tiếp. Trên **Windows**, sử dụng [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) hoặc [Git Bash](https://gitforwindows.org/).
 
 | Runtime        | Nền tảng       | Cài đặt                                                       |
 | -------------- | -------------- | ------------------------------------------------------------- |
@@ -315,6 +315,31 @@ Tính năng bảo mật chính:
 ```bash
 TZ=America/New_York ./cc-sandboxer.sh
 ```
+
+### Nạp file `.env`
+
+Nếu file `.env` tồn tại trong thư mục dự án, nó sẽ được **tự động nạp** vào container. Điều này hữu ích để truyền API key, token và các biến môi trường tùy chỉnh.
+
+```bash
+# 1. Sao chép file mẫu
+cp .env.example .env
+
+# 2. Sửa .env với giá trị của bạn
+nano .env
+
+# 3. Chạy cc-sandboxer — .env được nạp tự động
+cc-sandboxer
+```
+
+File `.env.example` bao gồm các biến phổ biến:
+
+```env
+GITHUB_PERSONAL_ACCESS_TOKEN=your_token_here
+ANTHROPIC_API_KEY=your_key_here
+# Thêm bất kỳ biến nào dự án của bạn cần
+```
+
+> **Lưu ý bảo mật:** File `.env` được truyền qua cờ `--env-file` của Docker. Đảm bảo `.env` nằm trong `.gitignore` để tránh commit các thông tin nhạy cảm.
 
 ### Tùy chỉnh DevContainer
 

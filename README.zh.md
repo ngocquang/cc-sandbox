@@ -140,7 +140,7 @@ cc . --continue
 
 你需要以下容器运行时**之一**：
 
-> **注意：** 仅支持 **macOS** 和 **Linux**。不支持 Windows。
+> **注意：** 原生支持 **macOS** 和 **Linux**。**Windows** 用户可通过 [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) 或 [Git Bash](https://gitforwindows.org/) 运行。
 
 | 运行时          | 平台           | 安装                                                          |
 | --------------- | -------------- | ------------------------------------------------------------- |
@@ -315,6 +315,31 @@ claude login
 ```bash
 TZ=America/New_York ./cc-sandboxer.sh
 ```
+
+### 加载 `.env` 文件
+
+如果项目目录中存在 `.env` 文件，它将被**自动加载**到容器中。这对于传递 API 密钥、令牌和自定义环境变量非常有用。
+
+```bash
+# 1. 复制示例文件
+cp .env.example .env
+
+# 2. 编辑 .env 填入你的值
+nano .env
+
+# 3. 运行 cc-sandboxer — .env 自动加载
+cc-sandboxer
+```
+
+`.env.example` 文件包含常用变量：
+
+```env
+GITHUB_PERSONAL_ACCESS_TOKEN=your_token_here
+ANTHROPIC_API_KEY=your_key_here
+# 添加你的项目需要的任何变量
+```
+
+> **安全提示：** `.env` 文件通过 Docker 的 `--env-file` 标志传递。请确保 `.env` 已添加到 `.gitignore` 中，避免提交敏感信息。
 
 ### 自定义 DevContainer
 

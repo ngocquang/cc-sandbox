@@ -140,7 +140,7 @@ cc . --continue
 
 You need **one** of these container runtimes:
 
-> **Note:** Supports **macOS** and **Linux** only. Windows is not supported.
+> **Note:** Supports **macOS** and **Linux** natively. **Windows** users can run via [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or [Git Bash](https://gitforwindows.org/).
 
 | Runtime        | Platform      | Install                                                       |
 | -------------- | ------------- | ------------------------------------------------------------- |
@@ -315,6 +315,31 @@ Key security features:
 ```bash
 TZ=America/New_York ./cc-sandboxer.sh
 ```
+
+### Loading `.env` File
+
+If a `.env` file exists in your project directory, it will be **automatically loaded** into the container. This is useful for passing API keys, tokens, and custom environment variables.
+
+```bash
+# 1. Copy the example file
+cp .env.example .env
+
+# 2. Edit .env with your values
+nano .env
+
+# 3. Run cc-sandboxer — .env is loaded automatically
+cc-sandboxer
+```
+
+The `.env.example` file includes common variables:
+
+```env
+GITHUB_PERSONAL_ACCESS_TOKEN=your_token_here
+ANTHROPIC_API_KEY=your_key_here
+# Add any custom variables your project needs
+```
+
+> **Security note:** The `.env` file is passed via Docker's `--env-file` flag. Make sure `.env` is in your `.gitignore` to avoid committing secrets.
 
 ### Customize DevContainer
 

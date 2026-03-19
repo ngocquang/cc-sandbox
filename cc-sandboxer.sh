@@ -133,8 +133,8 @@ show_banner() {
     cat << 'BANNER'
        ██████╗██╗      █████╗ ██╗   ██╗██████╗ ███████╗
       ██╔════╝██║     ██╔══██╗██║   ██║██╔══██╗██╔════╝
-      ██║     ██║     ███████║██║   ██║██║  ██║█████╗  
-      ██║     ██║     ██╔══██║██║   ██║██║  ██║██╔══╝  
+      ██║     ██║     ███████║██║   ██║██║  ██║█████╗
+      ██║     ██║     ██╔══██║██║   ██║██║  ██║██╔══╝
       ╚██████╗███████╗██║  ██║╚██████╔╝██████╔╝███████╗
        ╚═════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
 BANNER
@@ -200,6 +200,13 @@ show_help() {
     echo -e "  ${BOLD}${WHITE}ENVIRONMENT${NC}"
     echo ""
     echo -e "    ${WHITE}TZ${NC}                        Timezone ${DIM}(default: Asia/Ho_Chi_Minh)${NC}"
+    echo -e "    ${WHITE}.env${NC}                      Auto-loaded from project dir ${DIM}(if exists)${NC}"
+    echo ""
+    echo -e "  ${BOLD}${WHITE}WINDOWS USERS${NC}"
+    echo ""
+    echo -e "    ${DIM}This is a bash script. On Windows, use one of:${NC}"
+    echo -e "    ${YELLOW}•${NC}  ${BOLD}WSL${NC}            ${DIM}→${NC}  ${GREEN}wsl bash ${CMD_PREFIX}${NC}"
+    echo -e "    ${YELLOW}•${NC}  ${BOLD}Git Bash${NC}       ${DIM}→${NC}  Run directly in Git Bash terminal"
     echo ""
     divider
     echo ""
@@ -668,6 +675,31 @@ gen_firewall_file() {
     chmod +x "$fw_file"
 }
 
+# ── Copy .claude and fix plugin paths for container ───────────
+# Host .claude is mounted read-only at /tmp/.claude-host.
+# We copy it into /home/node/.claude so edits inside the
+# container don't affect the host. Then fix absolute macOS
+# paths in plugin configs to match the container layout.
+COPY_AND_FIX_CLAUDE='
+CLAUDE_DIR="/home/node/.claude"
+HOST_DIR="/tmp/.claude-host"
+if [ -d "$HOST_DIR" ]; then
+    echo -e "  \033[0;35m⚙️\033[0m  \033[1mSyncing .claude config...\033[0m"
+    rsync -a --delete "$HOST_DIR/" "$CLAUDE_DIR/"
+    chown -R node:node "$CLAUDE_DIR" 2>/dev/null || true
+    for f in "$CLAUDE_DIR/plugins/known_marketplaces.json" \
+             "$CLAUDE_DIR/plugins/installed_plugins.json"; do
+        if [ -f "$f" ]; then
+            # Replace any absolute path to .claude/ with container path
+            # Covers: macOS /Users/x/.claude/, Linux /home/x/.claude/,
+            #         WSL /mnt/c/Users/x/.claude/, /root/.claude/
+            sed -i "s|/[^ \"]*\\.claude/|${CLAUDE_DIR}/|g" "$f"
+        fi
+    done
+    echo -e "  \033[0;32m✅\033[0m  .claude config synced"
+fi
+'
+
 # ── Status box ───────────────────────────────────────────────
 show_launch_box() {
     local mode="$1"
@@ -705,6 +737,10 @@ show_launch_box() {
         box_row "$I_LOCK"  "Firewall:" "Active"   "${GREEN}"
     fi
 
+    if [[ "${ENV_FILE_LOADED:-false}" == "true" ]]; then
+        box_row "$I_GEAR"  "Env File:" "Loaded (.env)" "${GREEN}"
+    fi
+
     echo -e "  ${BOLD}${CYAN}│${NC}                                                       ${BOLD}${CYAN}│${NC}"
     echo -e "  ${BOLD}${CYAN}└───────────────────────────────────────────────────────┘${NC}"
     echo ""
@@ -724,7 +760,7 @@ run_container() {
         --name "$CONTAINER_NAME"
         --cap-add=NET_ADMIN
         -v "$PROJECT_PATH:/workspace:cached"
-        -v "${HOME}/.claude:/home/node/.claude:cached"
+        -v "${HOME}/.claude:/tmp/.claude-host:ro"
         -v "claude-npm:/usr/local/share/npm-global"
         -v "claude-history:/commandhistory"
         -e "CLAUDE_CONFIG_DIR=/home/node/.claude"
@@ -734,6 +770,13 @@ run_container() {
     # Mount .gitconfig if exists
     if [[ -f "${HOME}/.gitconfig" ]]; then
         RUN_ARGS+=(-v "${HOME}/.gitconfig:/home/node/.gitconfig:ro")
+    fi
+
+    # Load .env file from project directory if exists
+    local ENV_FILE_LOADED=false
+    if [[ -f "${PROJECT_PATH}/.env" ]]; then
+        RUN_ARGS+=(--env-file "${PROJECT_PATH}/.env")
+        ENV_FILE_LOADED=true
     fi
 
     # Generate firewall script as temp file and mount into container
@@ -765,6 +808,7 @@ run_container() {
 
         docker run "${RUN_ARGS[@]}" "$IMAGE_NAME:$IMAGE_TAG" -c "
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
+            ${COPY_AND_FIX_CLAUDE}
             echo ''
             echo 'Shell ready! Start Claude manually:'
             echo ''
@@ -784,6 +828,7 @@ run_container() {
 
         docker run "${RUN_ARGS[@]}" "$IMAGE_NAME:$IMAGE_TAG" -c "
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
+            ${COPY_AND_FIX_CLAUDE}
             ${CLAUDE_CMD}
         "
     fi

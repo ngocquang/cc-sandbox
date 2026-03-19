@@ -8,7 +8,7 @@ ENV TZ="$TZ"
 # ============================================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     less git procps sudo fzf zsh man-db unzip gnupg2 gh \
-    iptables ipset iproute2 dnsutils aggregate jq \
+    iptables ipset iproute2 dnsutils aggregate jq rsync \
     nano vim curl wget python3 python3-pip \
     ripgrep fd-find openssh-client ca-certificates \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
