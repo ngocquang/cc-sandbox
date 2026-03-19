@@ -687,6 +687,20 @@ gen_firewall_file() {
 # We copy it into /home/node/.claude so edits inside the
 # container don't affect the host. Then fix absolute macOS
 # paths in plugin configs to match the container layout.
+# ── Copy .gitconfig and set safe.directory ──────────────────
+# Host .gitconfig is mounted read-only at /tmp/.gitconfig-host.
+# We copy it into /home/node/.gitconfig so git can write to it,
+# then add safe.directory for /workspace to fix dubious ownership.
+COPY_AND_FIX_GITCONFIG='
+GITCONFIG_HOST="/tmp/.gitconfig-host"
+GITCONFIG_TARGET="/home/node/.gitconfig"
+if [ -f "$GITCONFIG_HOST" ]; then
+    cp "$GITCONFIG_HOST" "$GITCONFIG_TARGET"
+    chown node:node "$GITCONFIG_TARGET" 2>/dev/null || true
+fi
+git config --global --add safe.directory /workspace 2>/dev/null || true
+'
+
 COPY_AND_FIX_CLAUDE='
 CLAUDE_DIR="/home/node/.claude"
 HOST_DIR="/tmp/.claude-host"
@@ -789,9 +803,9 @@ run_container() {
         fi
     done
 
-    # Mount .gitconfig if exists
+    # Mount .gitconfig to temp location (will be copied at startup)
     if [[ -f "${HOME}/.gitconfig" ]]; then
-        RUN_ARGS+=(-v "${HOME}/.gitconfig:/home/node/.gitconfig:ro")
+        RUN_ARGS+=(-v "${HOME}/.gitconfig:/tmp/.gitconfig-host:ro")
     fi
 
     # Load .env file from project directory if exists
@@ -830,6 +844,7 @@ run_container() {
 
         docker run "${RUN_ARGS[@]}" "$IMAGE_NAME:$IMAGE_TAG" -c "
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
+            ${COPY_AND_FIX_GITCONFIG}
             ${COPY_AND_FIX_CLAUDE}
             echo ''
             echo 'Shell ready! Start Claude manually:'
@@ -850,6 +865,7 @@ run_container() {
 
         docker run "${RUN_ARGS[@]}" "$IMAGE_NAME:$IMAGE_TAG" -c "
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
+            ${COPY_AND_FIX_GITCONFIG}
             ${COPY_AND_FIX_CLAUDE}
             ${CLAUDE_CMD}
         "
