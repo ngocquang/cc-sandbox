@@ -694,6 +694,21 @@ fi
 git config --global --add safe.directory /workspace 2>/dev/null || true
 '
 
+# ── Copy .config directory ────────────────────────────────
+# Host .config is mounted read-only at /tmp/.config-host.
+# We rsync it into /home/node/.config so apps can write to it.
+COPY_AND_FIX_CONFIG='
+CONFIG_HOST="/tmp/.config-host"
+CONFIG_TARGET="/home/node/.config"
+if [ -d "$CONFIG_HOST" ]; then
+    echo -e "  \033[0;35m⚙️\033[0m  \033[1mSyncing .config directory...\033[0m"
+    mkdir -p "$CONFIG_TARGET"
+    rsync -a --delete "$CONFIG_HOST/" "$CONFIG_TARGET/"
+    chown -R node:node "$CONFIG_TARGET" 2>/dev/null || true
+    echo -e "  \033[0;32m✅\033[0m  .config synced"
+fi
+'
+
 COPY_AND_FIX_CLAUDE='
 CLAUDE_DIR="/home/node/.claude"
 HOST_DIR="/tmp/.claude-host"
@@ -785,6 +800,11 @@ run_container() {
         RUN_ARGS+=(-v "${HOME}/.gitconfig:/tmp/.gitconfig-host:ro")
     fi
 
+    # Mount .config to temp location (will be rsynced at startup)
+    if [[ -d "${HOME}/.config" ]]; then
+        RUN_ARGS+=(-v "${HOME}/.config:/tmp/.config-host:ro")
+    fi
+
     # Load .env file from project directory if exists
     local ENV_FILE_LOADED=false
     if [[ -f "${PROJECT_PATH}/.env" ]]; then
@@ -825,6 +845,7 @@ run_container() {
         docker run "${RUN_ARGS[@]}" "$IMAGE_NAME:$IMAGE_TAG" -c "
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
             ${COPY_AND_FIX_GITCONFIG}
+            ${COPY_AND_FIX_CONFIG}
             ${COPY_AND_FIX_CLAUDE}
             echo ''
             echo 'Shell ready! Start Claude manually:'
@@ -846,6 +867,7 @@ run_container() {
         docker run "${RUN_ARGS[@]}" "$IMAGE_NAME:$IMAGE_TAG" -c "
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
             ${COPY_AND_FIX_GITCONFIG}
+            ${COPY_AND_FIX_CONFIG}
             ${COPY_AND_FIX_CLAUDE}
             ${CLAUDE_CMD}
         "
