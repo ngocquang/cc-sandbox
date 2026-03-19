@@ -675,11 +675,10 @@ gen_firewall_file() {
     chmod +x "$fw_file"
 }
 
-# ── Copy .claude and fix plugin paths for container ───────────
-# Host .claude is mounted read-only at /tmp/.claude-host.
-# We copy it into /home/node/.claude so edits inside the
-# container don't affect the host. Then fix absolute macOS
-# paths in plugin configs to match the container layout.
+# ── Mount .claude directly and symlink host home path ─────────
+# Host .claude is mounted read-write at /home/node/.claude.
+# A symlink from the host home path to /home/node ensures
+# absolute paths in .claude configs resolve correctly.
 # ── Copy .gitconfig and set safe.directory ──────────────────
 # Host .gitconfig is mounted read-only at /tmp/.gitconfig-host.
 # We copy it into /home/node/.gitconfig so git can write to it,
@@ -701,31 +700,34 @@ COPY_AND_FIX_CONFIG='
 CONFIG_HOST="/tmp/.config-host"
 CONFIG_TARGET="/home/node/.config"
 if [ -d "$CONFIG_HOST" ]; then
-    echo -e "  \033[0;35m⚙️\033[0m  \033[1mSyncing .config directory...\033[0m"
     mkdir -p "$CONFIG_TARGET"
     rsync -a --delete "$CONFIG_HOST/" "$CONFIG_TARGET/"
     chown -R node:node "$CONFIG_TARGET" 2>/dev/null || true
-    echo -e "  \033[0;32m✅\033[0m  .config synced"
 fi
 '
 
-COPY_AND_FIX_CLAUDE='
-CLAUDE_DIR="/home/node/.claude"
-HOST_DIR="/tmp/.claude-host"
-if [ -d "$HOST_DIR" ]; then
-    echo -e "  \033[0;35m⚙️\033[0m  \033[1mSyncing .claude config...\033[0m"
-    rsync -a --delete "$HOST_DIR/" "$CLAUDE_DIR/"
-    chown -R node:node "$CLAUDE_DIR" 2>/dev/null || true
-    for f in "$CLAUDE_DIR/plugins/known_marketplaces.json" \
-             "$CLAUDE_DIR/plugins/installed_plugins.json"; do
-        if [ -f "$f" ]; then
-            # Replace any absolute path to .claude/ with container path
-            # Covers: macOS /Users/x/.claude/, Linux /home/x/.claude/,
-            #         WSL /mnt/c/Users/x/.claude/, /root/.claude/
-            sed -i "s|/[^ \"]*\\.claude/|${CLAUDE_DIR}/|g" "$f"
-        fi
-    done
-    echo -e "  \033[0;32m✅\033[0m  .claude config synced"
+# ── Copy .masko-desktop directory ──────────────────────────
+# Host .masko-desktop is mounted read-only at /tmp/.masko-desktop-host.
+# We rsync it into /home/node/.masko-desktop so apps can write to it.
+COPY_AND_FIX_MASKO='
+MASKO_HOST="/tmp/.masko-desktop-host"
+MASKO_TARGET="/home/node/.masko-desktop"
+if [ -d "$MASKO_HOST" ]; then
+    mkdir -p "$MASKO_TARGET"
+    rsync -a --delete "$MASKO_HOST/" "$MASKO_TARGET/"
+    chown -R node:node "$MASKO_TARGET" 2>/dev/null || true
+fi
+'
+
+# ── Symlink host home path for .claude path compatibility ──
+# .claude is mounted directly (read-write) at /home/node/.claude.
+# Files inside may contain absolute host paths (e.g. /Users/xxx/.claude/...).
+# Create a symlink so those paths resolve inside the container.
+SYMLINK_HOST_HOME='
+CONTAINER_HOME="/home/node"
+if [ -n "${HOST_HOME:-}" ] && [ "$HOST_HOME" != "$CONTAINER_HOME" ]; then
+    sudo mkdir -p "$(dirname "$HOST_HOME")"
+    sudo ln -sfn "$CONTAINER_HOME" "$HOST_HOME"
 fi
 '
 
@@ -788,11 +790,12 @@ run_container() {
         --network host
         --cap-add=NET_ADMIN
         -v "$PROJECT_PATH:/workspace:cached"
-        -v "${HOME}/.claude:/tmp/.claude-host:ro"
+        -v "${HOME}/.claude:/home/node/.claude"
         -v "claude-npm:/usr/local/share/npm-global"
         -v "claude-history:/commandhistory"
         -e "CLAUDE_CONFIG_DIR=/home/node/.claude"
         -e "TZ=$TZ"
+        -e "HOST_HOME=${HOME}"
     )
 
     # Mount .gitconfig to temp location (will be copied at startup)
@@ -803,6 +806,11 @@ run_container() {
     # Mount .config to temp location (will be rsynced at startup)
     if [[ -d "${HOME}/.config" ]]; then
         RUN_ARGS+=(-v "${HOME}/.config:/tmp/.config-host:ro")
+    fi
+
+    # Mount .masko-desktop to temp location (will be rsynced at startup)
+    if [[ -d "${HOME}/.masko-desktop" ]]; then
+        RUN_ARGS+=(-v "${HOME}/.masko-desktop:/tmp/.masko-desktop-host:ro")
     fi
 
     # Load .env file from project directory if exists
@@ -846,7 +854,8 @@ run_container() {
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
             ${COPY_AND_FIX_GITCONFIG}
             ${COPY_AND_FIX_CONFIG}
-            ${COPY_AND_FIX_CLAUDE}
+            ${COPY_AND_FIX_MASKO}
+            ${SYMLINK_HOST_HOME}
             echo ''
             echo 'Shell ready! Start Claude manually:'
             echo ''
@@ -868,7 +877,8 @@ run_container() {
             ${FW_SETUP} 2>/tmp/fw-err.log || { echo -e '\033[1;33m⚠ Firewall failed to initialize.\033[0m Ensure container has --cap-add=NET_ADMIN.'; cat /tmp/fw-err.log; echo ''; }
             ${COPY_AND_FIX_GITCONFIG}
             ${COPY_AND_FIX_CONFIG}
-            ${COPY_AND_FIX_CLAUDE}
+            ${COPY_AND_FIX_MASKO}
+            ${SYMLINK_HOST_HOME}
             ${CLAUDE_CMD}
         "
     fi
