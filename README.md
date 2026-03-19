@@ -281,6 +281,19 @@ Key security features:
 - **Input validation** — domain names validated before adding to whitelist
 - **No seccomp=unconfined** — only `NET_ADMIN` capability granted for iptables
 
+#### Expose ports to host
+
+```bash
+# Single ports
+./cc-sandboxer.sh --port 3000 --port 5432
+
+# Port range
+./cc-sandboxer.sh --port 3000-4000
+
+# Map different host:container ports
+./cc-sandboxer.sh --port 8080:3000
+```
+
 #### Add custom domains
 
 ```bash
@@ -409,6 +422,7 @@ Runtime:
   --shell                   Open shell without starting Claude
   --no-firewall             Skip network firewall
   --allow-domain NAME       Whitelist extra domain (repeatable)
+  --port PORT               Expose port to host (repeatable, supports range)
   --continue, -c            Resume previous conversation
   -p "prompt"               One-shot task mode
   --disallowedTools TOOLS   Block specific Claude tools

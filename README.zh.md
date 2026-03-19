@@ -281,6 +281,19 @@ claude login
 - **输入验证** — 域名在添加到白名单前会被验证
 - **不使用 seccomp=unconfined** — 仅授予 `NET_ADMIN` 权限用于 iptables
 
+#### 将端口暴露到主机
+
+```bash
+# 单个端口
+./cc-sandboxer.sh --port 3000 --port 5432
+
+# 端口范围
+./cc-sandboxer.sh --port 3000-4000
+
+# 映射不同的 host:container 端口
+./cc-sandboxer.sh --port 8080:3000
+```
+
 #### 添加自定义域名
 
 ```bash
@@ -409,6 +422,7 @@ ENV PATH=$PATH:/usr/local/go/bin
   --shell                   打开 shell 而不启动 Claude
   --no-firewall             跳过网络防火墙
   --allow-domain NAME       将域名加入白名单（可重复使用）
+  --port PORT               将端口暴露到主机（可重复使用，支持范围）
   --continue, -c            继续上次对话
   -p "prompt"               一次性任务模式
   --disallowedTools TOOLS   阻止特定的 Claude 工具

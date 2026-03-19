@@ -281,6 +281,19 @@ Tính năng bảo mật chính:
 - **Xác thực đầu vào** — tên domain được kiểm tra trước khi thêm vào whitelist
 - **Không dùng seccomp=unconfined** — chỉ cấp capability `NET_ADMIN` cho iptables
 
+#### Mở port ra host
+
+```bash
+# Từng port cụ thể
+./cc-sandboxer.sh --port 3000 --port 5432
+
+# Dải port
+./cc-sandboxer.sh --port 3000-4000
+
+# Map port khác nhau host:container
+./cc-sandboxer.sh --port 8080:3000
+```
+
 #### Thêm domain tùy chỉnh
 
 ```bash
@@ -409,6 +422,7 @@ Runtime:
   --shell                   Mở shell mà không khởi động Claude
   --no-firewall             Bỏ qua tường lửa mạng
   --allow-domain NAME       Thêm domain vào whitelist (có thể lặp lại)
+  --port PORT               Mở port ra host (có thể lặp lại, hỗ trợ range)
   --continue, -c            Tiếp tục cuộc hội thoại trước
   -p "prompt"               Chế độ chạy lệnh một lần
   --disallowedTools TOOLS   Chặn các tool cụ thể của Claude

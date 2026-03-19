@@ -175,6 +175,7 @@ show_help() {
     echo ""
     echo -e "    ${GREEN}--shell${NC}                   ${I_SHELL} Open shell only (don't start Claude)"
     echo -e "    ${GREEN}--no-firewall${NC}             ${I_GLOBE} Skip firewall setup"
+    echo -e "    ${GREEN}--port${NC} ${DIM}PORT${NC}               ${I_GLOBE} Expose port to host ${DIM}(repeatable, supports range)${NC}"
     echo -e "    ${GREEN}--allow-domain${NC} ${DIM}NAME${NC}       ${I_PLUG} Whitelist extra domain ${DIM}(repeatable)${NC}"
     echo -e "    ${GREEN}--continue${NC}, ${GREEN}-c${NC}            ${I_LINK} Resume previous conversation"
     echo -e "    ${GREEN}-p${NC} ${DIM}\"prompt\"${NC}               ${I_ZAP} One-shot task mode"
@@ -193,6 +194,12 @@ show_help() {
     echo ""
     echo -e "    ${DIM}# Resume last conversation${NC}"
     echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --continue"
+    echo ""
+    echo -e "    ${DIM}# Expose ports to host${NC}"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --port 3000 --port 5432"
+    echo ""
+    echo -e "    ${DIM}# Expose port range${NC}"
+    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --port 3000-4000"
     echo ""
     echo -e "    ${DIM}# Safe mode — block rm commands${NC}"
     echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --disallowedTools \"Bash(rm:*)\""
@@ -741,6 +748,11 @@ show_launch_box() {
         box_row "$I_GEAR"  "Env File:" "Loaded (.env)" "${GREEN}"
     fi
 
+    if [[ ${#EXTRA_PORTS[@]} -gt 0 ]]; then
+        local ports_str="${EXTRA_PORTS[*]}"
+        box_row "$I_PLUG"  "Ports   :" "$ports_str" "${CYAN}"
+    fi
+
     echo -e "  ${BOLD}${CYAN}│${NC}                                                       ${BOLD}${CYAN}│${NC}"
     echo -e "  ${BOLD}${CYAN}└───────────────────────────────────────────────────────┘${NC}"
     echo ""
@@ -766,6 +778,16 @@ run_container() {
         -e "CLAUDE_CONFIG_DIR=/home/node/.claude"
         -e "TZ=$TZ"
     )
+
+    # Expose extra ports
+    for port_mapping in "${EXTRA_PORTS[@]}"; do
+        # If no colon, map same port on both sides (e.g. 3000 → 3000:3000)
+        if [[ "$port_mapping" != *":"* ]]; then
+            RUN_ARGS+=(-p "${port_mapping}:${port_mapping}")
+        else
+            RUN_ARGS+=(-p "$port_mapping")
+        fi
+    done
 
     # Mount .gitconfig if exists
     if [[ -f "${HOME}/.gitconfig" ]]; then
@@ -849,6 +871,7 @@ SHELL_ONLY=false
 NO_FIREWALL=false
 INIT_MODE=false
 EXTRA_DOMAINS=()
+EXTRA_PORTS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -860,6 +883,17 @@ while [[ $# -gt 0 ]]; do
             SHELL_ONLY=true; shift ;;
         --no-firewall)
             NO_FIREWALL=true; shift ;;
+        --port)
+            if [[ -z "${2:-}" || "$2" == --* ]]; then
+                err "--port requires a port argument (e.g. 3000, 3000:3000, or 3000-4000:3000-4000)"
+                exit 1
+            fi
+            # Validate port format: PORT, HOST:CONTAINER, PORT-PORT, or HOST-HOST:CONTAINER-CONTAINER
+            if [[ ! "$2" =~ ^[0-9]+(-[0-9]+)?(:[0-9]+(-[0-9]+)?)?$ ]]; then
+                err "Invalid port format: $2 (expected PORT, HOST:CONTAINER, or RANGE like 3000-4000:3000-4000)"
+                exit 1
+            fi
+            EXTRA_PORTS+=("$2"); shift 2 ;;
         --allow-domain)
             if [[ -z "${2:-}" || "$2" == --* ]]; then
                 err "--allow-domain requires a domain argument"
