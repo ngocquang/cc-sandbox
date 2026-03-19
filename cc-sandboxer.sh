@@ -175,7 +175,6 @@ show_help() {
     echo ""
     echo -e "    ${GREEN}--shell${NC}                   ${I_SHELL} Open shell only (don't start Claude)"
     echo -e "    ${GREEN}--no-firewall${NC}             ${I_GLOBE} Skip firewall setup"
-    echo -e "    ${GREEN}--port${NC} ${DIM}PORT${NC}               ${I_GLOBE} Expose port to host ${DIM}(repeatable, supports range)${NC}"
     echo -e "    ${GREEN}--allow-domain${NC} ${DIM}NAME${NC}       ${I_PLUG} Whitelist extra domain ${DIM}(repeatable)${NC}"
     echo -e "    ${GREEN}--continue${NC}, ${GREEN}-c${NC}            ${I_LINK} Resume previous conversation"
     echo -e "    ${GREEN}-p${NC} ${DIM}\"prompt\"${NC}               ${I_ZAP} One-shot task mode"
@@ -194,12 +193,6 @@ show_help() {
     echo ""
     echo -e "    ${DIM}# Resume last conversation${NC}"
     echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --continue"
-    echo ""
-    echo -e "    ${DIM}# Expose ports to host${NC}"
-    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --port 3000 --port 5432"
-    echo ""
-    echo -e "    ${DIM}# Expose port range${NC}"
-    echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --port 3000-4000"
     echo ""
     echo -e "    ${DIM}# Safe mode — block rm commands${NC}"
     echo -e "    ${GREEN}\$${NC} ${CMD_PREFIX} . --disallowedTools \"Bash(rm:*)\""
@@ -762,11 +755,6 @@ show_launch_box() {
         box_row "$I_GEAR"  "Env File:" "Loaded (.env)" "${GREEN}"
     fi
 
-    if [[ ${#EXTRA_PORTS[@]} -gt 0 ]]; then
-        local ports_str="${EXTRA_PORTS[*]}"
-        box_row "$I_PLUG"  "Ports   :" "$ports_str" "${CYAN}"
-    fi
-
     echo -e "  ${BOLD}${CYAN}│${NC}                                                       ${BOLD}${CYAN}│${NC}"
     echo -e "  ${BOLD}${CYAN}└───────────────────────────────────────────────────────┘${NC}"
     echo ""
@@ -776,14 +764,13 @@ show_launch_box() {
 run_container() {
     step "Launching container ${I_ROCKET}"
 
-    # Cleanup existing
-    if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-        docker rm -f "$CONTAINER_NAME" &>/dev/null || true
-    fi
+    # Always use a unique container name (PID-based) to allow multiple instances
+    local actual_container_name="${CONTAINER_NAME}-$$"
 
     local RUN_ARGS=(
         --rm -it
-        --name "$CONTAINER_NAME"
+        --name "$actual_container_name"
+        --network host
         --cap-add=NET_ADMIN
         -v "$PROJECT_PATH:/workspace:cached"
         -v "${HOME}/.claude:/tmp/.claude-host:ro"
@@ -792,16 +779,6 @@ run_container() {
         -e "CLAUDE_CONFIG_DIR=/home/node/.claude"
         -e "TZ=$TZ"
     )
-
-    # Expose extra ports
-    for port_mapping in "${EXTRA_PORTS[@]}"; do
-        # If no colon, map same port on both sides (e.g. 3000 → 3000:3000)
-        if [[ "$port_mapping" != *":"* ]]; then
-            RUN_ARGS+=(-p "${port_mapping}:${port_mapping}")
-        else
-            RUN_ARGS+=(-p "$port_mapping")
-        fi
-    done
 
     # Mount .gitconfig to temp location (will be copied at startup)
     if [[ -f "${HOME}/.gitconfig" ]]; then
@@ -829,6 +806,9 @@ run_container() {
         RUN_ARGS+=(-v "$fw_tmp:/opt/init-firewall.sh:ro")
         FW_SETUP="sudo bash /opt/init-firewall.sh"
     fi
+
+    # Trap Ctrl+C (and other signals) to kill the container on exit
+    trap 'echo ""; echo -e "  ${YELLOW}${I_WARN}${NC}  Stopping container ${BOLD}${actual_container_name}${NC}..."; docker rm -f "$actual_container_name" &>/dev/null || true; [[ -f "${fw_tmp:-}" ]] && rm -f "$fw_tmp"; exit 130' INT TERM
 
     # Build claude command as an array to avoid injection
     local CLAUDE_CMD="claude --dangerously-skip-permissions"
@@ -887,7 +867,6 @@ SHELL_ONLY=false
 NO_FIREWALL=false
 INIT_MODE=false
 EXTRA_DOMAINS=()
-EXTRA_PORTS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -899,17 +878,6 @@ while [[ $# -gt 0 ]]; do
             SHELL_ONLY=true; shift ;;
         --no-firewall)
             NO_FIREWALL=true; shift ;;
-        --port)
-            if [[ -z "${2:-}" || "$2" == --* ]]; then
-                err "--port requires a port argument (e.g. 3000, 3000:3000, or 3000-4000:3000-4000)"
-                exit 1
-            fi
-            # Validate port format: PORT, HOST:CONTAINER, PORT-PORT, or HOST-HOST:CONTAINER-CONTAINER
-            if [[ ! "$2" =~ ^[0-9]+(-[0-9]+)?(:[0-9]+(-[0-9]+)?)?$ ]]; then
-                err "Invalid port format: $2 (expected PORT, HOST:CONTAINER, or RANGE like 3000-4000:3000-4000)"
-                exit 1
-            fi
-            EXTRA_PORTS+=("$2"); shift 2 ;;
         --allow-domain)
             if [[ -z "${2:-}" || "$2" == --* ]]; then
                 err "--allow-domain requires a domain argument"

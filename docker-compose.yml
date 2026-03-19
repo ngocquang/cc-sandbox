@@ -3,9 +3,7 @@ services:
     build:
       context: ./docker
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-      - "5555:5555"
+    network_mode: host
     volumes:
       - .:/workspace
       - commandhistory:/commandhistory
